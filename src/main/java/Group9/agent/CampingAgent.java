@@ -39,7 +39,7 @@ public class CampingAgent implements Guard {
         if(foundTargetArea){
             // 1. Go into the target area, and spin
             // 2. Walk around the target area
-            return new DropPheromone(SmellPerceptType.Pheromone1);
+            return doTargetAreaAction(percepts);
         } else {
             for(ObjectPercept object : objectPercepts){
                 if (object.getType().equals(ObjectPerceptType.TargetArea)){
@@ -59,6 +59,10 @@ public class CampingAgent implements Guard {
         }
 
 
+    }
+
+    private GuardAction doTargetAreaAction(GuardPercepts percepts) {
+        return new NoAction();
     }
 
     private GuardAction doIntruderChaseAction(GuardPercepts percepts) {
