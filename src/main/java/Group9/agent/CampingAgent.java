@@ -1,4 +1,4 @@
-package Group9.agent;
+package Group9.agent.Guard2;
 
 import Group9.Game;
 import Interop.Action.*;
@@ -40,9 +40,14 @@ public class CampingAgent implements Guard {
         VisionPrecepts vision = percepts.getVision();
         Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
 
-        for(ObjectPercept object : objectPercepts){
-            if(object.getType().equals(ObjectPerceptType.Intruder)){
-                return doIntruderChaseAction(percepts);
+        if(foundIntruder){
+            return doIntruderChaseAction(percepts);
+        } else {
+            for (ObjectPercept object : objectPercepts) {
+                if (object.getType().equals(ObjectPerceptType.Intruder)) {
+                foundIntruder = true;
+                break;
+                }
             }
         }
 
@@ -106,6 +111,6 @@ public class CampingAgent implements Guard {
     }
 
     private GuardAction doIntruderChaseAction(GuardPercepts percepts) {
-        return new NoAction();
+                        return new NoAction();
     }
 }
