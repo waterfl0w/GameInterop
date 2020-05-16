@@ -1,4 +1,4 @@
-package Group9.agent;
+package Group9.agent.Guard2;
 import Group9.Game;
 import Interop.Action.*;
 import Interop.Agent.Guard;
