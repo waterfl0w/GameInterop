@@ -1,5 +1,4 @@
-package Group9.agent.Guard2;
-
+package Group9.agent;
 import Group9.Game;
 import Interop.Action.*;
 import Interop.Agent.Guard;
@@ -27,6 +26,7 @@ public class CampingAgent implements Guard {
     private Angle rotation; //0 rotation -> positive Y, neutral X
     private boolean foundIntruder = false;
     private boolean foundTargetArea = false;
+    private boolean IntruderCapture = false;
     private boolean set = false;
 
     public CampingAgent() {
@@ -45,8 +45,8 @@ public class CampingAgent implements Guard {
         } else {
             for (ObjectPercept object : objectPercepts) {
                 if (object.getType().equals(ObjectPerceptType.Intruder)) {
-                foundIntruder = true;
-                break;
+                    foundIntruder = true;
+                    break;
                 }
             }
         }
@@ -111,6 +111,27 @@ public class CampingAgent implements Guard {
     }
 
     private GuardAction doIntruderChaseAction(GuardPercepts percepts) {
-                        return new NoAction();
+        return new NoAction();
     }
-}
+
+    private boolean checkGuardWin(GuardPercepts percepts){
+        Set<ObjectPercept> guardView = percepts.getVision().getObjects().getAll();
+        Distance captureDistance = percepts.getScenarioGuardPercepts().getScenarioPercepts().getCaptureDistance();
+
+        for(ObjectPercept object : guardView){
+            if(object.getType().equals(ObjectPerceptType.Intruder)){
+                foundIntruder = true;
+                Distance dis = new Distance(location,object.getPoint());
+                if(dis.equals(captureDistance)){
+                    IntruderCapture = true;
+                }
+
+            }
+        }
+                if(foundIntruder && IntruderCapture){
+                    return true;
+                }
+       return false;
+    }
+
+     }
