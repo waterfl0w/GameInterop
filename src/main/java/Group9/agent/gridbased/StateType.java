@@ -6,7 +6,8 @@ package Group9.agent.gridbased;
  */
 enum StateType {
     INITIAL(StateHandlerInitial.class),
-    EXPLORE_360(StateHandlerExplore360.class);
+    EXPLORE_360(StateHandlerExplore360.class),
+    FIND_NEW_TARGET(StateHandlerFindNewTarget.class);
 
     private final Class<? extends StateHandler> stateHandlerClass;
 

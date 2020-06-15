@@ -1,5 +1,6 @@
 package Group9.agent.gridbased;
 
+import Group9.agent.deepspace.ActionContainer;
 import Group9.agent.odyssey.GridMap;
 import Group9.math.Vector2;
 import Interop.Action.GuardAction;
@@ -52,14 +53,13 @@ public class StateHandlerExplore360 implements StateHandler {
             gridMap.update(objectCellPosition.getX(), objectCellPosition.getY(), objectSeen.getType().isSolid(), objectSeen.getType());
         }
 
-        System.out.println(gridMap.toString());
         postExecute();
         return retAction;
     }
 
     void postExecute() {
         if (actionsQueue.isEmpty()) {
-//            nextState = StateType.FIND_NEW_TARGET;
+            nextState = StateType.FIND_NEW_TARGET;
             active = false;
         } else {
             nextState = StateType.EXPLORE_360;
@@ -68,7 +68,6 @@ public class StateHandlerExplore360 implements StateHandler {
 
     // inits the graph (or adds a new vertex)  &  schedules rotations
     private void init(GuardPercepts percepts) {
-        actionsQueue.add(ActionContainer.of(this, new Move(new Distance(1.5))));
         actionsQueue.addAll(agent.planRotation(percepts, Math.PI * 2));
     }
 

@@ -14,6 +14,10 @@ public class CellContent {
         this.type = type;
     }
 
+    public CellPosition getCellPosition() {
+        return cellPosition;
+    }
+
     public ObjectPerceptType getType() {
         return type;
     }
@@ -35,7 +39,7 @@ public class CellContent {
     @Override
     public String toString() {
         if(cellPosition.x() == 0 && cellPosition.y() == 0){
-            return "cccc";
+            return "bbbb";
         }
         return "aaaa";
     }

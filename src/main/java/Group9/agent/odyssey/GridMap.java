@@ -13,7 +13,7 @@ public class GridMap {
     // to only grow in one direction.
     private final static double GROWTH_FACTOR = 2;
     private final double resolution;
-    public CellContent[][] map;
+    private CellContent[][] map;
 
     private final static double occupiedValue = 0.9;
     private final static double unoccupiedValue = -0.7;
@@ -21,6 +21,10 @@ public class GridMap {
     public GridMap(double resolution, double initialWidth, double initialHeight){
         this.resolution = resolution;
         this.map = new CellContent[ceil(initialHeight/resolution)][ceil(initialWidth/resolution)];
+    }
+
+    public CellContent[][] getCells() {
+        return map;
     }
 
     public double getWidth()
@@ -53,7 +57,7 @@ public class GridMap {
     {
         this.checkForGrowth(x, y);
         CellPosition cell = toCell(x, y);
-        this.map[(verticalLength()-cell.y()-1)][cell.x()] = value;
+        this.map[cell.y()][cell.x()] = value;
     }
 
     public CellContent get(double x, double y)
@@ -69,7 +73,7 @@ public class GridMap {
 
     private CellContent cellGet(CellPosition cell)
     {
-        return this.map[(verticalLength()-cell.y()-1)][cell.x()];
+        return this.map[cell.y()][cell.x()];
     }
 
     private boolean hasCell(CellPosition cell)
@@ -88,7 +92,7 @@ public class GridMap {
         }
     }
 
-    public List<CellPosition> path(Vector2 start, Vector2 target)
+    public List<Vector2> path(Vector2 start, Vector2 target)
     {
         CellPosition startCell = toCell(start.getX(), start.getY());
         CellPosition targetCell = toCell(target.getX(), target.getY());
@@ -111,12 +115,12 @@ public class GridMap {
             if(current.equals(targetCell))
             {
                 System.out.println("done");
-                List<CellPosition> total_path = new LinkedList<>();
-                total_path.add(current);
+                List<Vector2> total_path = new LinkedList<>();
+                total_path.add(toRealWorld(current));
                 while (cameFrom.containsKey(current))
                 {
                     current = cameFrom.get(current);
-                    total_path.add(current);
+                    total_path.add(toRealWorld(current));
                 }
                 Collections.reverse(total_path);
                 return total_path;
@@ -156,7 +160,7 @@ public class GridMap {
         //return Math.abs(cell.x() - cell.y()) + Math.abs(target.x() - target.y()); //Manhattan distance
     }
 
-    private CellPosition toCell(double x, double y)
+    public CellPosition toCell(double x, double y)
     {
         return new CellPosition(
                 floor((x + getWidth() / 2) / resolution),
@@ -164,24 +168,19 @@ public class GridMap {
         );
     }
 
+    public Vector2 toRealWorld(CellPosition cellPosition)
+    {
+        //TODO move to the proper centre of the cell
+        return new Vector2(
+                ((cellPosition.x() * resolution) - getWidth() / 2) + resolution / 2,
+                ((cellPosition.y() * resolution) - getHeight() / 2) + resolution / 2
+        );
+    }
+
     private void checkForGrowth(double x, double y)
     {
         //--- calculate the cell position. use the abs values to avoid handling negative values further down in the pipeline
         CellPosition cell = toCell(Math.abs(x), Math.abs(y));
-        final double horizontalGrowth = (cell.x() / (double) (horizontalLength()));
-        final double verticalGrowth = (cell.y() / (double) (verticalLength()));
-        /*if(horizontalGrowth > 1 && verticalGrowth > 1)
-        {
-            grow(ceil(horizontalGrowth * horizontalLength() * GROWTH_FACTOR), ceil(verticalGrowth * verticalLength() * GROWTH_FACTOR));
-        }
-        else if(horizontalGrowth > 1)
-        {
-            grow(ceil(horizontalGrowth * horizontalLength() * GROWTH_FACTOR), verticalLength());
-        }
-        else if(verticalGrowth > 1)
-        {
-            grow(horizontalLength(), ceil(verticalGrowth * verticalLength() * GROWTH_FACTOR));
-        }*/
         if(cell.x() >= horizontalLength() && cell.y() >= verticalLength())
         {
             grow(ceil(cell.x() * GROWTH_FACTOR), ceil(cell.y() * GROWTH_FACTOR));
@@ -196,12 +195,12 @@ public class GridMap {
         }
     }
 
-    private int verticalLength()
+    public int verticalLength()
     {
         return this.map.length;
     }
 
-    private int horizontalLength()
+    public int horizontalLength()
     {
         return this.map[0].length;
     }
