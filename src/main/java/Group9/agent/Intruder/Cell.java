@@ -62,6 +62,7 @@ public class Cell {
         if (above == null)
         {
             above = new Cell(getMidX(), getMidY() + 1);
+            System.out.println("added: " + above);
         }
         if (below == null)
         {

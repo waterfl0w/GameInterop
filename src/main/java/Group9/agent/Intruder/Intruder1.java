@@ -144,13 +144,16 @@ public class Intruder1 implements Intruder {
 
     public void explore(ViewArea view, ObjectPercepts objects)
     {
+        System.out.println("started exploring...");
         while(toBeProcessed.size() > 0)
         {
             if (toBeProcessed.get(0) != null)
             {
                 double contained = view.partContained(toBeProcessed.get(0), objects);
+                System.out.println("for: " + toBeProcessed.get(0) + " partContained: " + contained);
                 if (contained > 0.0)
                 {
+                    System.out.println("partcontained > 0");
                     LinkedList<Cell> unprocessed = toBeProcessed.get(0).getUnprocessed(history);
                     history.addAll(unprocessed);
                     toBeProcessed.addAll(unprocessed);
