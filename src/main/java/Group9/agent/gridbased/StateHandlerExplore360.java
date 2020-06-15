@@ -1,17 +1,17 @@
 package Group9.agent.gridbased;
 
+import Group9.agent.odyssey.GridMap;
 import Group9.math.Vector2;
-import Group9.math.graph.Vertex;
 import Interop.Action.GuardAction;
+import Interop.Action.Move;
+import Interop.Geometry.Distance;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.Vision.ObjectPercept;
+import Interop.Percept.Vision.ObjectPerceptType;
 
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-
-import static Interop.Percept.Vision.ObjectPerceptType.EmptySpace;
 
 public class StateHandlerExplore360 implements StateHandler {
 
@@ -39,19 +39,20 @@ public class StateHandlerExplore360 implements StateHandler {
             retAction = actionsQueue.poll();
         }
 
+        GridMap gridMap = agent.getGridMap();
         // add information from this fov to grid
         Set<ObjectPercept> objectPercepts = percepts.getVision().getObjects().getAll();
         for (ObjectPercept objectSeen : objectPercepts) {
-            Set<Cell> cellsInLine;
-            cellsInLine = agent.getCellsInLine(agent.getPosition(), objectSeen.getPoint());
-            Cell objectCell = agent.getCellFromR(Vector2.from(objectSeen.getPoint()));
-            cellsInLine.remove(objectCell);
-            for (Cell cell : cellsInLine) {
-                // TODO: grid.updateCell(cell, EmptySpace);
+            Set<Vector2> cellsInLine = agent.getCellsInLine(agent.getPosition(), objectSeen.getPoint());
+            Vector2 objectCellPosition = Vector2.from(objectSeen.getPoint());
+            cellsInLine.remove(objectCellPosition);
+            for (Vector2 cellPosition : cellsInLine) {
+                gridMap.update(cellPosition.getX(), cellPosition.getY(), false, ObjectPerceptType.EmptySpace);
             }
-            //TODO : grid.updateCell(objectCell, objectSeen.getType());
+            gridMap.update(objectCellPosition.getX(), objectCellPosition.getY(), objectSeen.getType().isSolid(), objectSeen.getType());
         }
 
+        System.out.println(gridMap.toString());
         postExecute();
         return retAction;
     }
@@ -67,6 +68,7 @@ public class StateHandlerExplore360 implements StateHandler {
 
     // inits the graph (or adds a new vertex)  &  schedules rotations
     private void init(GuardPercepts percepts) {
+        actionsQueue.add(ActionContainer.of(this, new Move(new Distance(1.5))));
         actionsQueue.addAll(agent.planRotation(percepts, Math.PI * 2));
     }
 

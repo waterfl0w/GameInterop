@@ -1,13 +1,13 @@
-package Group9.agent.odyssey;
+package Group9.agent.gridbased;
 
 import java.util.Objects;
 
-public class Cell
+public class CellPosition
 {
     private final int x;
     private final int y;
 
-    public Cell(int x, int y)
+    public CellPosition(int x, int y)
     {
         this.x = x;
         this.y = y;
@@ -27,9 +27,9 @@ public class Cell
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Cell cell = (Cell) o;
-        return x == cell.x &&
-                y == cell.y;
+        CellPosition cellPosition = (CellPosition) o;
+        return x == cellPosition.x &&
+                y == cellPosition.y;
     }
 
     @Override

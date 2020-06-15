@@ -1,6 +1,6 @@
 package Group9.agent.gridbased;
 
-import Group9.Game;
+import Group9.agent.odyssey.GridMap;
 import Group9.math.Vector2;
 import Interop.Action.GuardAction;
 import Interop.Action.Move;
@@ -13,10 +13,8 @@ import Interop.Geometry.Point;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.Scenario.SlowDownModifiers;
 import Interop.Percept.Vision.ObjectPercept;
-import Interop.Percept.Vision.ObjectPerceptType;
 import Interop.Percept.Vision.VisionPrecepts;
 
-import java.io.PipedInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.DoubleFunction;
@@ -30,6 +28,8 @@ public class GridBased implements Guard {
     private StateType curState;
     private final EnumMap<StateType, StateHandler> stateHandlers;
 
+    private GridMap gridMap = new GridMap(cellLen, 50, 50);
+
     public GridBased() {
         curState = StateType.INITIAL;
         stateHandlers = new EnumMap<>(StateType.class);
@@ -42,6 +42,11 @@ public class GridBased implements Guard {
                 e.printStackTrace();
             }
         });
+    }
+
+    protected GridMap getGridMap()
+    {
+        return this.gridMap;
     }
 
     @Override
@@ -182,28 +187,28 @@ public class GridBased implements Guard {
 
 
 
-    public Set<Cell> getCellsInLine(Vector2 agentOrigin, Point seenObject) {
-        Vector2 v = Vector2.from(seenObject);
+    public Set<Vector2> getCellsInLine(Vector2 agentOrigin, Point seenObject) {
+        Vector2 v = Vector2.from(seenObject).rotated(-direction.getClockDirection());
         Vector2 o = agentOrigin;
 
-        Vector2 dv = v.normalise().mul(cellLen * 0.5);
+        Vector2 dv = v.normalise().mul(cellLen * 0.1);
 
-        Set<Cell> cells = new HashSet<Cell>();
+        Set<Vector2> cellPositions = new HashSet<>();
 
-        for (double tick = 0; tick <= v.length()/(cellLen * 0.5); tick++) {
-            cells.add(getCellFromR(o.add(dv.mul(tick))));
+        for (double tick = 0; tick <= v.length()/(cellLen * 0.1); tick++) {
+            cellPositions.add(o.add(dv.mul(tick)));
         }
 
-        return cells;
+        return cellPositions;
     }
 
 
-    public Cell getCellFromR(Vector2 point) {
-        return new Cell((int) Math.floor(point.getX()/cellLen), (int) Math.floor(point.getY()/cellLen));
+    public CellPosition getCellFromR(Vector2 point) {
+        return new CellPosition((int) Math.floor(point.getX()/cellLen), (int) Math.floor(point.getY()/cellLen));
     }
 
 
-    private List<Cell> getCellIntercepts(Point agentOrigin, Point seenObject) {
+    private List<CellPosition> getCellIntercepts(Point agentOrigin, Point seenObject) {
         // Idea for another way of computing
         // Wasted too much time on this, and it's pribably not even faster.
         // Not finished, missing cases where agentOrigin > seenObject
