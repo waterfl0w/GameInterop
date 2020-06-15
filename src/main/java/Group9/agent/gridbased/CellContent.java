@@ -31,6 +31,10 @@ public class CellContent {
         this.logValue += value;
     }
 
+    public void setType(ObjectPerceptType type) {
+        this.type = type;
+    }
+
     public boolean isOccupied()
     {
         return true; //TODO
@@ -41,6 +45,11 @@ public class CellContent {
         if(cellPosition.x() == 0 && cellPosition.y() == 0){
             return "bbbb";
         }
+        if(type.isSolid())
+        {
+            return "WWWW";
+        }
         return "aaaa";
     }
+
 }

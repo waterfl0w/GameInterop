@@ -203,6 +203,20 @@ public class GridBased implements Guard {
         return cellPositions;
     }
 
+    public List<Vector2> ray(Vector2 a, Vector2 b)
+    {
+        final double length = b.distance(a);
+        final Vector2 dir = b.sub(a).normalise().mul(cellLen * 0.01);
+        List<Vector2> list = new LinkedList<>();
+        for(double dx = 0; dx <= length / (cellLen * 0.1); dx++)
+        {
+            Vector2 p = a.add(dir.mul(dx));
+            list.add(p);
+        }
+
+        return list;
+    }
+
 
     public CellPosition getCellFromR(Vector2 point) {
         return new CellPosition((int) Math.floor(point.getX()/cellLen), (int) Math.floor(point.getY()/cellLen));

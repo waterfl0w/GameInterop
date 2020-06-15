@@ -45,11 +45,11 @@ public class GridMap {
         {
             content = new CellContent(toCell(x, y), type);
             set(x, y, content);
-            content.updateLog(isOccupied ? occupiedValue : unoccupiedValue);
         }
-        else
+        content.updateLog(isOccupied ? occupiedValue : unoccupiedValue);
+        if(isOccupied)
         {
-            content.updateLog(isOccupied ? occupiedValue : unoccupiedValue);
+            content.setType(type);
         }
     }
 
