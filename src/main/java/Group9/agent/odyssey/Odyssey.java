@@ -1,6 +1,5 @@
 package Group9.agent.odyssey;
 
-import Group9.agent.Intruder.Cell;
 import Group9.math.Vector2;
 
 import java.util.List;
@@ -35,8 +34,8 @@ public class Odyssey {
         gridMap.set(5, -3, (short) 1);
 
         System.out.println(gridMap);
-        List<GridMap.Cell> path = gridMap.path(new Vector2(-2,-5), new Vector2(0, 10));
-        for(GridMap.Cell move : path) {
+        List<Cell> path = gridMap.path(new Vector2(-2,-5), new Vector2(0, 10));
+        for(Cell move : path) {
             gridMap.map[gridMap.map.length- move.y()][move.x()] = 2;
         }
 
