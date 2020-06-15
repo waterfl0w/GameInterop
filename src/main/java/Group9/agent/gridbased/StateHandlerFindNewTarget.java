@@ -164,7 +164,7 @@ public class StateHandlerFindNewTarget implements StateHandler{
 
         for(int y = -5; y <= 5; y++)
         {
-            for(int x = -5; x <= .t.5; x++)
+            for(int x = -5; x <= 5; x++)
             {
                 int rx = agentPosition.x() + x;
                 int ry = agentPosition.y() + y;
@@ -185,6 +185,7 @@ public class StateHandlerFindNewTarget implements StateHandler{
 
         blackList.add(leastSeenCell.getCellPosition());
         Vector2 target = gridMap.toRealWorld(leastSeenCell.getCellPosition());
+        target = target.mul(-1);
         actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, agent.getDirection(), agent.getPosition(), target));
         /*List<Vector2> shortestPath =  gridMap.path(agent.getPosition(), target);
         for (int i = 0; i < shortestPath.size() - 2; i++) {
