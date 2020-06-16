@@ -45,9 +45,8 @@ public class StateHandlerExplore360 implements StateHandler {
         // add information from this fov to grid
         Set<ObjectPercept> objectPercepts = percepts.getVision().getObjects().getAll();
         for (ObjectPercept objectSeen : objectPercepts) {
-            //Set<Vector2> cellsInLine = agent.getCellsInLine(agent.getPosition(), objectSeen.getPoint());
-            List<Vector2> cellsInLine = agent.ray(agent.getPosition(), Vector2.from(objectSeen.getPoint()));
-            Vector2 objectCellPosition = Vector2.from(objectSeen.getPoint());
+            Set<Vector2> cellsInLine = agent.getCellsInLine(agent.getPosition(), objectSeen.getPoint());
+            Vector2 objectCellPosition = Vector2.from(objectSeen.getPoint()).rotated(-agent.getDirection().getClockDirection()).add(agent.getPosition());
             cellsInLine.remove(objectCellPosition);
             for (Vector2 cellPosition : cellsInLine) {
                 gridMap.update(cellPosition.getX(), cellPosition.getY(), false, ObjectPerceptType.EmptySpace);
@@ -55,6 +54,7 @@ public class StateHandlerExplore360 implements StateHandler {
             gridMap.update(objectCellPosition.getX(), objectCellPosition.getY(), objectSeen.getType().isSolid(), objectSeen.getType());
         }
 
+        System.out.println(gridMap);
         postExecute();
         return retAction;
     }

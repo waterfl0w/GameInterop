@@ -190,14 +190,12 @@ public class GridBased implements Guard {
 
     public Set<Vector2> getCellsInLine(Vector2 agentOrigin, Point seenObject) {
         Vector2 v = Vector2.from(seenObject).rotated(-direction.getClockDirection());
-        Vector2 o = agentOrigin;
-
         Vector2 dv = v.normalise().mul(cellLen * 0.1);
 
         Set<Vector2> cellPositions = new HashSet<>();
 
         for (double tick = 0; tick <= v.length()/(cellLen * 0.1); tick++) {
-            cellPositions.add(o.add(dv.mul(tick)));
+            cellPositions.add(agentOrigin.add(dv.mul(tick)));
         }
 
         return cellPositions;
@@ -206,9 +204,9 @@ public class GridBased implements Guard {
     public List<Vector2> ray(Vector2 a, Vector2 b)
     {
         final double length = b.distance(a);
-        final Vector2 dir = b.sub(a).normalise().mul(cellLen * 0.01);
+        final Vector2 dir = b.sub(a).normalise().mul(cellLen);
         List<Vector2> list = new LinkedList<>();
-        for(double dx = 0; dx <= length / (cellLen * 0.1); dx++)
+        for(double dx = 0; dx <= length / cellLen; dx++)
         {
             Vector2 p = a.add(dir.mul(dx));
             list.add(p);
