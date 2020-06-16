@@ -136,22 +136,21 @@ public class GridBased implements Guard {
     protected Queue<ActionContainer<GuardAction>> planRotation(GuardPercepts percepts, double alpha)
     {
         // TODO kinda cheating; fix
-        //final double sign = Math.signum(alpha);
-        //alpha = Math.abs(alpha);
+        final double sign = Math.signum(alpha);
 
         Queue<ActionContainer<GuardAction>> retActionsQueue = new LinkedList<>();
 
-        double maxRotation = percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians();
+        double maxRotation = percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * sign;
         int fullRotations = (int) (alpha / maxRotation);
-        double restRotation = alpha % maxRotation;
+        double restRotation = (alpha % maxRotation) * sign;
 
-        for (int i = 0; i < fullRotations; i++)  {
+        for (int i = 0; i < Math.abs(fullRotations); i++)  {
             retActionsQueue.offer(
                 ActionContainer.of(this, new Rotate(Angle.fromRadians(maxRotation)))
             );
         }
 
-        if (restRotation > 0) {
+        if (Math.abs(restRotation) > 0) {
             retActionsQueue.offer(
                 ActionContainer.of(this, new Rotate(Angle.fromRadians(restRotation)))
             );
@@ -199,25 +198,6 @@ public class GridBased implements Guard {
         }
 
         return cellPositions;
-    }
-
-    public List<Vector2> ray(Vector2 a, Vector2 b)
-    {
-        final double length = b.distance(a);
-        final Vector2 dir = b.sub(a).normalise().mul(cellLen);
-        List<Vector2> list = new LinkedList<>();
-        for(double dx = 0; dx <= length / cellLen; dx++)
-        {
-            Vector2 p = a.add(dir.mul(dx));
-            list.add(p);
-        }
-
-        return list;
-    }
-
-
-    public CellPosition getCellFromR(Vector2 point) {
-        return new CellPosition((int) Math.floor(point.getX()/cellLen), (int) Math.floor(point.getY()/cellLen));
     }
 
 

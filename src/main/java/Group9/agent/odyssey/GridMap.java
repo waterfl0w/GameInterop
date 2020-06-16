@@ -81,15 +81,59 @@ public class GridMap {
         return (cell.x() < horizontalLength() && cell.y() < verticalLength() && cell.x() >= 0 && cell.y() >= 0);
     }
 
-    public void ray(Vector2 a, Vector2 b)
+    public List<Vector2> ray(Vector2 a, Vector2 b)
     {
-        final double length = b.distance(a);
-        final Vector2 dir = b.sub(a).normalise().mul(resolution);
-        for(double dx = 0; dx <= length / resolution; dx++)
+        //@SOURCE http://algo.pw/algo/69/java
+        List<Vector2> cells = new ArrayList<>();
+        CellPosition ac = toCell(a.getX(), a.getY());
+        CellPosition bc = toCell(b.getX(), b.getY());
+        int pdx = 0, pdy = 0, es, el, err;
+
+        int dx = bc.x() - ac.x();
+        int dy = bc.y() - ac.y();
+
+        int incx = (int) Math.signum(dx);
+        int incy = (int) Math.signum(dy);
+
+        if (dx < 0) dx = -dx;
+        if (dy < 0) dy = -dy;
+
+        if (dx > dy)
         {
-            Vector2 p = a.add(dir.mul(dx));
-            set(p.getX(), p.getY(), null);
+            pdx = incx;
+            es = dy;
+            el = dx;
         }
+        else
+        {
+            pdy = incy;
+            es = dx;
+            el = dy;
+        }
+
+        int x = ac.x();
+        int y = ac.y();
+        err = el/2;
+        cells.add(toRealWorld(new CellPosition(x, y)));
+
+        for (int t = 0; t < el; t++)
+        {
+            err -= es;
+            if (err < 0)
+            {
+                err += el;
+                x += incx;
+                y += incy;
+            }
+            else
+            {
+                x += pdx;
+                y += pdy;
+            }
+
+            cells.add(toRealWorld(new CellPosition(x, y)));
+        }
+        return cells;
     }
 
     public List<Vector2> path(Vector2 start, Vector2 target)
