@@ -111,7 +111,7 @@ private boolean set = false;
                 return IntruderAction(percepts);
 
         }*/
-      /*  if(!foundSentry)
+      if(!foundSentry)
         {
             for(ObjectPercept object : objectPercepts){
                 if (object.getType().equals(ObjectPerceptType.SentryTower)){
@@ -125,7 +125,7 @@ private boolean set = false;
             while(count<NoOfRotations) {
                 return sentry(percepts);
             }
-        }*/
+        }
 
         return exploration(percepts);
     }

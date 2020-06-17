@@ -1,6 +1,6 @@
 package Group9.agent.factories;
 
-import Group9.agent.Guard2.Tactical;
+import Group9.agent.Guard2.Agent3;
 import Group9.agent.RandomIntruderAgent;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
@@ -22,7 +22,7 @@ public class TacticalAgentFactory implements IAgentFactory{
     public List<Guard> createGuards(int amount) {
         List<Guard> guards = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
-            guards.add(new Tactical());
+            guards.add(new Agent3());
         }
         return guards;
     }
