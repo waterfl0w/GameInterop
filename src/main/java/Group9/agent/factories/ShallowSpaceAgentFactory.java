@@ -1,5 +1,6 @@
 package Group9.agent.factories;
 
+import Group9.agent.Guard_2.Tactical;
 import Group9.agent.RandomIntruderAgent;
 import Group9.agent.shallowspace.ShallowSpaceAgent;
 import Interop.Agent.Guard;
@@ -22,7 +23,7 @@ public class ShallowSpaceAgentFactory implements IAgentFactory {
     public List<Guard> createGuards(int amount) {
         List<Guard> guards = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
-            guards.add(new ShallowSpaceAgent());
+            guards.add(new Tactical());
         }
         return guards;
     }
