@@ -5,6 +5,7 @@ import Group9.agent.deepspace.ActionContainer;
 import Group9.math.Vector2;
 import Interop.Action.GuardAction;
 import Interop.Action.Move;
+import Interop.Action.NoAction;
 import Interop.Action.Rotate;
 import Interop.Agent.Guard;
 import Interop.Geometry.Angle;
@@ -30,12 +31,14 @@ public class Agent3 implements Guard {
 
     private Vector2[] intruderHistory = new Vector2[2];
 
+    boolean lastSeen = false;
+
     public Agent3() { }
 
     @Override
     public GuardAction getAction(GuardPercepts percepts) {
 
-        Vector2 intruderPosition = canSeeIntruder(percepts);
+        Vector2 intruderPosition = predictIntruder(percepts);
 
         if(intruderPosition != null || !followIntruder.isEmpty())
         {
@@ -43,9 +46,13 @@ public class Agent3 implements Guard {
             {
                 targetAreaGuarding.clear();
                 followIntruder.clear();
-                followIntruder.addAll(
-                        moveTowardsPoint(percepts, new Vector2(0, 1 ), new Vector2.Origin(), intruderPosition)
-                );
+                if (intruderPosition.equals(new Vector2(0, 0))) {
+                    followIntruder.add(ActionContainer.of(this, new NoAction()));
+                } else {
+                    followIntruder.addAll(
+                            moveTowardsPoint(percepts, new Vector2(0, 1), new Vector2.Origin(), intruderPosition)
+                    );
+                }
             }
             else
             {
@@ -115,6 +122,12 @@ public class Agent3 implements Guard {
         return 1;
     }
 
+
+
+
+
+
+
     protected Queue<ActionContainer<GuardAction>> moveTowardsPoint(GuardPercepts percepts, Vector2 direction, Vector2 source,
                                                                    Vector2 target)
     {
@@ -151,11 +164,17 @@ public class Agent3 implements Guard {
         return retActionsQueue;
     }
 
-    public Vector2 canSeeIntruder(GuardPercepts percepts)
+    public Vector2 predictIntruder(GuardPercepts percepts)
     {
         Set<ObjectPercept> intruders = percepts.getVision().getObjects()
                 .filter(e -> e.getType() == ObjectPerceptType.Intruder)
                 .getAll();
+
+        if (intruders.isEmpty() && lastSeen) {
+            intruderHistory[0] = null;
+            intruderHistory[1] = null;
+        }
+        lastSeen = !intruders.isEmpty();
 
         if(!intruders.isEmpty())
         {
@@ -175,24 +194,27 @@ public class Agent3 implements Guard {
 
              */
 
-            if(intruderHistory[0] == null)
-            {
+            Vector2 ret = new Vector2(0, 0);
+            if (intruderHistory[0] == null) {
                 intruderHistory[0] = position;
+            } else if (intruderHistory[0] != null && intruderHistory[1] == null) {
+                intruderHistory[1] = position;
+                ret = intruderHistory[0].add(intruderHistory[0].sub(intruderHistory[1]).mul(1.5));
+//                return new Vector2(0, 0);
+            } else if (intruderHistory[0] != null && intruderHistory[1] != null) {
+                intruderHistory[1] = position;
+                intruderHistory[0] = intruderHistory[1];
+                ret = intruderHistory[0].add(intruderHistory[0].sub(intruderHistory[1]).mul(1.5));
             }
-            else
-            {
-                intruderHistory[1] = intruderHistory[0];
-                intruderHistory[0] = position;
-            }
+//
+//            if(intruderHistory[1] != null)
+//            {
+//                Vector2 direction = intruderHistory[0].sub(intruderHistory[1]).normalise();
+//                double speed = intruderHistory[1].distance(intruderHistory[0]);
+//                return direction.mul(speed).add(direction.flip().mul(0.5));
+//            }
 
-            if(intruderHistory[1] != null)
-            {
-                Vector2 direction = intruderHistory[0].sub(intruderHistory[1]).normalise();
-                double speed = intruderHistory[1].distance(intruderHistory[0]);
-                return direction.mul(speed).add(direction.flip().mul(0.5));
-            }
-
-            return position;
+            return ret;
         }
 
         return null;

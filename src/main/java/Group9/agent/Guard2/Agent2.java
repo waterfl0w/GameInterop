@@ -43,25 +43,25 @@ private boolean set = false;
         VisionPrecepts vision = percepts.getVision();
         Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
 
-      /*if(!foundIntruder)
-        {
-            for(ObjectPercept object : objectPercepts)
-            {
-                if(object.getType().equals(ObjectPerceptType.Intruder))
-                {
-                    foundIntruder= true;
-                    break;
-                }
-            }
-        }
-        if(foundIntruder)
-        {
-            if(followIntruder.isEmpty()){
-                followIntruder.addAll(moveTowardsIntruder(percepts) );
-            }
-          //  return null;
-            return followIntruder.poll().getAction();
-        }*/
+//        if(!foundIntruder)
+//        {
+//            for(ObjectPercept object : objectPercepts)
+//            {
+//                if(object.getType().equals(ObjectPerceptType.Intruder))
+//                {
+//                    foundIntruder= true;
+//                    break;
+//                }
+//            }
+//        }
+//        if(foundIntruder)
+//        {
+//            if(followIntruder.isEmpty()){
+//                followIntruder.addAll(moveTowardsIntruder(percepts) );
+//            }
+//          //  return null;
+//            return followIntruder.poll().getAction();
+//        }
      /*  if(!foundTeleport )
         {
             for(ObjectPercept object : objectPercepts){
