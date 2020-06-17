@@ -40,44 +40,43 @@ public class Tactical implements Guard {
         VisionPrecepts vision = percepts.getVision();
         Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
 
-//        if(!foundIntruder)
-//        {
-//            for(ObjectPercept object : objectPercepts)
-//            {
-//                if(object.getType().equals(ObjectPerceptType.Intruder))
-//                {
-//                    foundIntruder= true;
-//                    break;
-//                }
-//            }
-//        }
-//        if(foundIntruder)
-//        {
-//            if(followIntruder.isEmpty()){
-//                followIntruder.addAll(predictIntruderMove(percepts));
-//            }
-//            return followIntruder.poll().getAction();
-//        }
-//   if(!FoundArea)
-//        {
-//            for(ObjectPercept object : objectPercepts){
-//                if (object.getType().equals(ObjectPerceptType.Teleport) ||object.getType().equals(ObjectPerceptType.ShadedArea) || object.getType().equals(ObjectPerceptType.SentryTower) || object.getType().equals(ObjectPerceptType.Window) || object.getType().equals(ObjectPerceptType.Door)){
-//                    FoundArea = true;
-//                    break;
-//                }
-//            }
-//        }
-//        if(FoundArea && percepts.wasLastActionExecuted()){
-//
-//                 if (CampingArea.isEmpty()) {
-//                     CampingArea.addAll(camping(percepts));
-//                 }
-//                 while (count < NoOfRotations) {
-//
-//                     return CampingArea.poll().getAction();
-//                 }
-//
-//             }
+        if(!foundIntruder)
+        {
+            for(ObjectPercept object : objectPercepts)
+            {
+                if(object.getType().equals(ObjectPerceptType.Intruder))
+                {
+                    foundIntruder= true;
+                    break;
+                }
+            }
+        }
+        if(foundIntruder)
+        {
+            if(followIntruder.isEmpty()){
+                followIntruder.addAll(predictIntruderMove(percepts));
+            }
+            return followIntruder.poll().getAction();
+        }
+        /*if (!FoundArea) {
+            for (ObjectPercept object : objectPercepts) {
+                if (object.getType().equals(ObjectPerceptType.Teleport) || object.getType().equals(ObjectPerceptType.ShadedArea) || object.getType().equals(ObjectPerceptType.SentryTower) || object.getType().equals(ObjectPerceptType.Window) || object.getType().equals(ObjectPerceptType.Door)) {
+                    FoundArea = true;
+                    break;
+                }
+            }
+        }
+        if (FoundArea && percepts.wasLastActionExecuted()) {
+
+            if (CampingArea.isEmpty()) {
+                CampingArea.addAll(camping(percepts));
+            }
+            while (count < NoOfRotations) {
+
+                return CampingArea.poll().getAction();
+            }
+
+        }*/
 
 
         return exploration(percepts);
