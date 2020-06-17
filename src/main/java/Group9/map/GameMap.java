@@ -305,7 +305,7 @@ public class GameMap {
         }
 
         //TODO not sure anymore whether this is right or not
-        if(false && (retSet.isEmpty() || onlyEmptySpace))
+        if(retSet.isEmpty() || onlyEmptySpace)
         {
             retSet.add(new ObjectPercept(ObjectPerceptType.EmptySpace, line.getEnd()
                     .sub(agentContainer.getPosition()) // move relative to agent
