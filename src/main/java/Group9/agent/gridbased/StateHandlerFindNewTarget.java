@@ -9,6 +9,7 @@ import Interop.Action.Move;
 import Interop.Action.NoAction;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.Vision.ObjectPerceptType;
+import com.google.common.collect.EvictingQueue;
 
 import java.util.*;
 import java.util.function.Function;
@@ -44,9 +45,16 @@ public class StateHandlerFindNewTarget implements StateHandler{
             ObjectPerceptType.EmptySpace
     ));
 
+    // history of last few potential targets that were found (move to them not necessarity executed)
+    //Queue<Vector2> history;
+    EvictingQueue<Vector2> history;
+    Vector2 lastCellVectAttempt;
+
     public StateHandlerFindNewTarget() {
         targetTimeout = targetsPriority.stream().collect(Collectors.toMap(Function.identity(), t -> 0));
         originalPriority = targetsPriority.stream().collect(Collectors.toMap(Function.identity(), t -> targetsPriority.indexOf(t)));
+        history = EvictingQueue.create(20);
+        lastCellVectAttempt = new Vector2(0, 0);
     }
 
     @Override
@@ -55,11 +63,11 @@ public class StateHandlerFindNewTarget implements StateHandler{
 
         this.agent = agent;
 
-        initialRoundAfterTeleport = percepts.getAreaPercepts().isJustTeleported() && !initialRoundAfterTeleport && teleportPriorityChange == -1;
-        if(initialRoundAfterTeleport)
-        {
-            this.teleportPriorityChange = TELEPORT_PRIORITY_TURNS;
-        }
+//        initialRoundAfterTeleport = percepts.getAreaPercepts().isJustTeleported() && !initialRoundAfterTeleport && teleportPriorityChange == -1;
+//        if(initialRoundAfterTeleport)
+//        {
+//            this.teleportPriorityChange = TELEPORT_PRIORITY_TURNS;
+//        }
 
         if (!active) {
             findNewTarget(percepts);
@@ -149,35 +157,61 @@ public class StateHandlerFindNewTarget implements StateHandler{
         CellContent[][] cells = gridMap.getCells();
         CellContent leastSeenCell = null;
 
-        for(int y = 0; y < gridMap.horizontalLength(); y++)
-        {
-            for(int x = 0; x < gridMap.verticalLength(); x++)
-            {
-                int rx = x;
-                int ry = y;
+        StateHandlerExplore360 explore360state = (StateHandlerExplore360) this.agent.getStateHandlers().get(StateType.EXPLORE_360);
 
-                CellContent cell = cells[ry][rx];
+        Set<Vector2> cells360 = explore360state.getCells360();
 
-                if(cell != null)
-                {
-                    double d = gridMap.toRealWorld(leastSeenCell.getCellPosition()).distance(agent.getPosition());
-                    if(leastSeenCell == null ||
-                        (leastSeenCell.getLogValue() < cell.getLogValue() && cell.getLogValue() < 0 && !blackList.contains(cell.getCellPosition()) && !cell.getType().isSolid())
-                    )
-                    {
-                        leastSeenCell = cell;
-                    }
-                }
+        // eesh this is terrible:
+        double maxLogValue = -9990;
+        Vector2 maxCellVect = new Vector2(0, 0);
+        history.add(maxCellVect);
+        for (Vector2 cell : cells360) {
+            CellContent cellContent = gridMap.get(cell.getX(), cell.getY());
+            if (cellContent.getLogValue() > maxLogValue
+                    && cellContent.getLogValue() < 0
+                    && !history.contains(cell)) {
+//                    && !lastCellVectAttempt.equals(cell) {
+                maxLogValue = cellContent.getLogValue();
+                maxCellVect = cell;
             }
         }
 
-        blackList.add(leastSeenCell.getCellPosition());
 
-        Vector2 target = gridMap.toRealWorld(leastSeenCell.getCellPosition());
-        //if(gridMap.path(agent.getPosition(), target) != null)
-        {
-            actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, agent.getDirection(), agent.getPosition(), target));
-        }
+
+//        Optional<Vector2> min = cells360.stream()
+//                .min(
+//                    (c1, c2) -> Double.compare(gridMap.get(c1.getX(), c1.getY()).getLogValue(), gridMap.get(c2.getX(), c2.getY()).getLogValue())
+//                );
+
+//        for(int y = 0; y < gridMap.horizontalLength(); y++)
+//        {
+//            for(int x = 0; x < gridMap.verticalLength(); x++)
+//            {
+//                int rx = x;
+//                int ry = y;
+//
+//                CellContent cell = cells[ry][rx];
+//
+//                if(cell != null)
+//                {
+//                    double d = gridMap.toRealWorld(leastSeenCell.getCellPosition()).distance(agent.getPosition());
+//                    if(leastSeenCell == null ||
+//                        (leastSeenCell.getLogValue() < cell.getLogValue() && cell.getLogValue() < 0 && !blackList.contains(cell.getCellPosition()) && !cell.getType().isSolid())
+//                    )
+//                    {
+//                        leastSeenCell = cell;
+//                    }
+//                }
+//            }
+//        }
+//
+//        blackList.add(leastSeenCell.getCellPosition());
+//
+//        Vector2 target = gridMap.toRealWorld(leastSeenCell.getCellPosition());
+//        //if(gridMap.path(agent.getPosition(), target) != null)
+//        {
+//            actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, agent.getDirection(), agent.getPosition(), target));
+//        }
         /*List<Vector2> shortestPath =  gridMap.path(agent.getPosition(), target);
         for (int i = 0; i < shortestPath.size() - 2; i++) {
             Vector2 s = shortestPath.get(0 + i);
@@ -185,6 +219,10 @@ public class StateHandlerFindNewTarget implements StateHandler{
             Vector2 n = shortestPath.get(2 + i);
             actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, c.sub(s).normalise(), c, n));
         }*/
+
+        actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, agent.getDirection(), agent.getPosition(), maxCellVect));
+        history.add(maxCellVect);
+        lastCellVectAttempt = maxCellVect;
     }
 
 

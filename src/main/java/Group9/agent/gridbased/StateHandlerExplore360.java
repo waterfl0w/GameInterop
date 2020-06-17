@@ -10,10 +10,8 @@ import Interop.Percept.GuardPercepts;
 import Interop.Percept.Vision.ObjectPercept;
 import Interop.Percept.Vision.ObjectPerceptType;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StateHandlerExplore360 implements StateHandler {
 
@@ -25,7 +23,10 @@ public class StateHandlerExplore360 implements StateHandler {
     private boolean active = false;
 
     public StateHandlerExplore360() {
+        this.cells360 = new HashSet<>();
     }
+
+    private Set<Vector2> cells360;
 
     @Override
     public ActionContainer<GuardAction> execute(GuardPercepts percepts, GridBased agent) {
@@ -52,12 +53,17 @@ public class StateHandlerExplore360 implements StateHandler {
             for (Vector2 cellPosition : cellsInLine) {
                 gridMap.update(cellPosition.getX(), cellPosition.getY(), false, ObjectPerceptType.EmptySpace);
             }
+            cells360.addAll(cellsInLine);
             gridMap.update(objectCellPosition.getX(), objectCellPosition.getY(), objectSeen.getType().isSolid(), objectSeen.getType());
         }
 
-        System.out.println(gridMap);
+        //System.out.println(gridMap);
         postExecute();
         return retAction;
+    }
+
+    public Set<Vector2> getCells360() {
+        return cells360;
     }
 
     void postExecute() {
@@ -72,6 +78,7 @@ public class StateHandlerExplore360 implements StateHandler {
     // inits the graph (or adds a new vertex)  &  schedules rotations
     private void init(GuardPercepts percepts) {
         actionsQueue.addAll(agent.planRotation(percepts, Math.PI * 2));
+        cells360.clear();
     }
 
     @Override

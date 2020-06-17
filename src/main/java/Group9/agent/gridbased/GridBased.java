@@ -185,7 +185,9 @@ public class GridBased implements Guard {
         this.direction = direction;
     }
 
-
+    public EnumMap<StateType, StateHandler> getStateHandlers() {
+        return stateHandlers;
+    }
 
     public Set<Vector2> getCellsInLine(Vector2 agentOrigin, Point seenObject) {
         Vector2 v = Vector2.from(seenObject).rotated(-direction.getClockDirection());
