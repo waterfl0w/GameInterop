@@ -1,4 +1,5 @@
 package Group9.agent.Guard2;
+
 import Group9.Game;
 import Interop.Action.*;
 import Interop.Agent.Guard;
@@ -30,7 +31,7 @@ public class CampingAgent implements Guard {
     private boolean set = false;
 
     public CampingAgent() {
-        location = new Point(0,0);
+        location = new Point(0, 0);
         rotation = Angle.fromRadians(0);
     }
 
@@ -40,7 +41,7 @@ public class CampingAgent implements Guard {
         VisionPrecepts vision = percepts.getVision();
         Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
 
-        if(foundIntruder){
+        if (foundIntruder) {
             return doIntruderChaseAction(percepts);
         } else {
             for (ObjectPercept object : objectPercepts) {
@@ -51,28 +52,25 @@ public class CampingAgent implements Guard {
             }
         }
 
-        if(foundTargetArea){
+        if (foundTargetArea) {
             // 1. Go into the target area, and spin
             // 2. Walk around the target area
             return doTargetAreaAction(percepts);
         } else {
-            for(ObjectPercept object : objectPercepts){
-                if (object.getType().equals(ObjectPerceptType.TargetArea)){
+            for (ObjectPercept object : objectPercepts) {
+                if (object.getType().equals(ObjectPerceptType.TargetArea)) {
                     foundTargetArea = true;
                     break;
                 }
             }
 
-            if(!percepts.wasLastActionExecuted())
-            {
+            if (!percepts.wasLastActionExecuted()) {
                 Angle newRotation = Angle.fromRadians(percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble());
                 return new Rotate(newRotation);
-            }
-            else
-            {
+            } else {
                 Distance movingDistance = new Distance(percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue() * 0.5);
-                double newY = location.getY() + Math.sin(rotation.getRadians())*movingDistance.getValue();
-                double newX = location.getX() + Math.cos(rotation.getRadians())*movingDistance.getValue();
+                double newY = location.getY() + Math.sin(rotation.getRadians()) * movingDistance.getValue();
+                double newX = location.getX() + Math.cos(rotation.getRadians()) * movingDistance.getValue();
                 location = new Point(newX, newY);
                 return new Move(movingDistance);
             }
@@ -82,7 +80,7 @@ public class CampingAgent implements Guard {
     }
 
     private GuardAction doTargetAreaAction(GuardPercepts percepts) {
-        if(!set) {
+        if (!set) {
             Set<ObjectPercept> objects = percepts.getVision().getObjects().getAll();
             for (ObjectPercept object :
                     objects) {
@@ -91,8 +89,8 @@ public class CampingAgent implements Guard {
                     if (move.getDistance().getValue() >= percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue()) {
                         move = new Move(percepts.getScenarioGuardPercepts().getMaxMoveDistanceGuard());
                     }
-                    double newY = location.getY() + Math.sin(rotation.getRadians())*move.getDistance().getValue();
-                    double newX = location.getX() + Math.cos(rotation.getRadians())*move.getDistance().getValue();
+                    double newY = location.getY() + Math.sin(rotation.getRadians()) * move.getDistance().getValue();
+                    double newX = location.getX() + Math.cos(rotation.getRadians()) * move.getDistance().getValue();
                     location = new Point(newX, newY);
 
                     return move;
@@ -101,10 +99,10 @@ public class CampingAgent implements Guard {
             set = true;
         }
         Angle newRotation = Angle.fromRadians(percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble());
-        rotation = Angle.fromRadians(rotation.getRadians()+newRotation.getRadians());
-        if(rotation.getDegrees() > 360){
+        rotation = Angle.fromRadians(rotation.getRadians() + newRotation.getRadians());
+        if (rotation.getDegrees() > 360) {
             rotation = Angle.fromDegrees(rotation.getDegrees() - 360);
-        } else if(rotation.getDegrees() < 0){
+        } else if (rotation.getDegrees() < 0) {
             rotation = Angle.fromDegrees(rotation.getDegrees() + 360);
         }
         return new Rotate(newRotation);
@@ -114,24 +112,24 @@ public class CampingAgent implements Guard {
         return new NoAction();
     }
 
-    private boolean checkGuardWin(GuardPercepts percepts){
+    private boolean checkGuardWin(GuardPercepts percepts) {
         Set<ObjectPercept> guardView = percepts.getVision().getObjects().getAll();
         Distance captureDistance = percepts.getScenarioGuardPercepts().getScenarioPercepts().getCaptureDistance();
 
-        for(ObjectPercept object : guardView){
-            if(object.getType().equals(ObjectPerceptType.Intruder)){
+        for (ObjectPercept object : guardView) {
+            if (object.getType().equals(ObjectPerceptType.Intruder)) {
                 foundIntruder = true;
-                Distance dis = new Distance(location,object.getPoint());
-                if(dis.equals(captureDistance)){
+                Distance dis = new Distance(location, object.getPoint());
+                if (dis.equals(captureDistance)) {
                     IntruderCapture = true;
                 }
 
             }
         }
-                if(foundIntruder && IntruderCapture){
-                    return true;
-                }
-       return false;
+        if (foundIntruder && IntruderCapture) {
+            return true;
+        }
+        return false;
     }
 
-     }
+}
