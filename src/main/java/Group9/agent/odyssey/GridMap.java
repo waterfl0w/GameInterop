@@ -5,7 +5,13 @@ import Group9.agent.gridbased.CellPosition;
 import Group9.math.Vector2;
 import Interop.Percept.Vision.ObjectPerceptType;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class GridMap {
 
@@ -131,7 +137,17 @@ public class GridMap {
                 y += pdy;
             }
 
-            cells.add(toRealWorld(new CellPosition(x, y)));
+            CellPosition position = new CellPosition(x, y);
+            if(hasCell(position))
+            {
+                CellContent cell = cellGet(position);
+                if(cell != null && cell.getType().isSolid())
+                {
+                    break;
+                }
+            }
+
+            cells.add(toRealWorld(position));
         }
         return cells;
     }
@@ -269,6 +285,37 @@ public class GridMap {
 
         System.out.println("grow time: " + (System.currentTimeMillis() - time) + " grow to " + horizontalLength() + "x" + verticalLength());
 
+    }
+
+    public void writeDebugImage()
+    {
+        BufferedImage bufferedImage = new BufferedImage(horizontalLength(), verticalLength(), BufferedImage.TYPE_INT_RGB);
+        for(int x = 0; x < horizontalLength(); x++)
+        {
+            for(int y = 0; y < verticalLength(); y++)
+            {
+                int pixel = 0;
+                CellContent cellContent = this.map[y][x];
+                if(cellContent != null)
+                {
+                    if(cellContent.getType().isSolid())
+                    {
+                        pixel = Color.BLUE.getRGB();
+                    }
+                    else
+                    {
+                        pixel = Color.WHITE.getRGB();
+                    }
+                }
+                bufferedImage.setRGB(x, y, pixel);
+            }
+        }
+        File outputfile = new File("saved.png");
+        try {
+            ImageIO.write(bufferedImage, "png", outputfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
