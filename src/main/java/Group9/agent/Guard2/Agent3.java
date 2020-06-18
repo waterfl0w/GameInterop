@@ -1,5 +1,5 @@
-//package Group9.agent.Guard2;
-package Group9.agent.shallowspace;
+package Group9.agent.Guard2;
+//package Group9.agent.shallowspace;
 import Group9.Game;
 import Group9.agent.deepspace.ActionContainer;
 import Group9.math.Vector2;
@@ -29,9 +29,7 @@ public class Agent3 implements Guard {
     private Queue<ActionContainer<GuardAction>> CampingArea = new LinkedList<>();
 
     private Vector2[] intruderHistory = new Vector2[2];
-   //Set<Integer> s = new HashSet<>() ;
-   //Set<Integer> t = new HashSet<>();
-    boolean lastSeen = false;
+     boolean lastSeen = false;
     int NoOfRotation = 40;//10*4
 
 
@@ -39,7 +37,8 @@ public class Agent3 implements Guard {
 
     @Override
     public GuardAction getAction(GuardPercepts percepts) {
-
+        VisionPrecepts vision = percepts.getVision();
+        Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
         Vector2 intruderPosition = predictIntruder(percepts);
 
         if(intruderPosition != null || !followIntruder.isEmpty()) {
@@ -63,9 +62,6 @@ public class Agent3 implements Guard {
             }
         }
         else{
-            VisionPrecepts vision = percepts.getVision();
-            Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
-
 
              if (!foundTeleport) {
                 for (ObjectPercept object : objectPercepts) {
