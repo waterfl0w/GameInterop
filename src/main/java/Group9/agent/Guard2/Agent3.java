@@ -1,4 +1,5 @@
-package Group9.agent.Guard2;
+//package Group9.agent.Guard2;
+package Group9.agent.shallowspace;
 import Group9.Game;
 import Group9.agent.deepspace.ActionContainer;
 import Group9.math.Vector2;
@@ -16,24 +17,23 @@ import Interop.Percept.Vision.ObjectPercept;
 import Interop.Percept.Vision.ObjectPerceptType;
 import Interop.Percept.Vision.VisionPrecepts;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 public class Agent3 implements Guard {
 
-    private Angle rotation = Angle.fromRadians(0); //0 rotation -> positive Y, neutral X
+    private Angle rotation = Angle.fromRadians(0);
    private int count = 0;
-    private boolean foundCampingArea = false;
-
+    private boolean foundTeleport = false;
+    private boolean foundSentry = false;
     private Queue<ActionContainer<GuardAction>> followIntruder = new LinkedList<>();
     private Queue<ActionContainer<GuardAction>> CampingArea = new LinkedList<>();
 
     private Vector2[] intruderHistory = new Vector2[2];
-
+   //Set<Integer> s = new HashSet<>() ;
+   //Set<Integer> t = new HashSet<>();
     boolean lastSeen = false;
-    int NoOfRotation = 10;
+    int NoOfRotation = 40;//10*4
+
 
     public Agent3() { }
 
@@ -41,8 +41,7 @@ public class Agent3 implements Guard {
     public GuardAction getAction(GuardPercepts percepts) {
 
         Vector2 intruderPosition = predictIntruder(percepts);
-        VisionPrecepts vision = percepts.getVision();
-        Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
+
         if(intruderPosition != null || !followIntruder.isEmpty()) {
             if (intruderPosition != null) {
                 CampingArea.clear();
@@ -59,26 +58,43 @@ public class Agent3 implements Guard {
             }
 
             if (!followIntruder.isEmpty()) {
+
                 return followIntruder.poll().getAction();
             }
         }
+        else{
+            VisionPrecepts vision = percepts.getVision();
+            Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
 
-             if (!foundCampingArea) {
+
+             if (!foundTeleport) {
                 for (ObjectPercept object : objectPercepts) {
-                    if (object.getType().equals(ObjectPerceptType.SentryTower) || object.getType().equals(ObjectPerceptType.Teleport)) {
-                        foundCampingArea = true;
+                    if (object.getType().equals(ObjectPerceptType.Teleport)) {
+                        foundTeleport = true;
                         break;
                     }
                 }
             }
-        if(foundCampingArea  && percepts.wasLastActionExecuted()){
-            if (CampingArea.isEmpty()) {
+        if (!foundSentry) {
+            for (ObjectPercept object : objectPercepts) {
+                if (object.getType().equals(ObjectPerceptType.SentryTower)) {
+                    foundSentry = true;
+                    break;
+                }
+            }
+        }
+
+        if((foundTeleport || foundSentry)  ) {
+            if (CampingArea.isEmpty() ) {
                 CampingArea.clear();
+                followIntruder.clear();
                 CampingArea.addAll(camping(percepts));
             }
-         //   while(count<NoOfRotation) {
+
+             while(count<NoOfRotation) {
                 return CampingArea.poll().getAction();
-           // }
+        }
+          }
         }
 
 return exploration(percepts);
@@ -134,12 +150,13 @@ return exploration(percepts);
                 max = tmp;
             }
         }
-        if(max != null && max.length() >= 0.1)
-        {
-           // count++;
 
-            return moveTowardsPoint(percepts, new Vector2(0 ,1), new Vector2.Origin(), max);
-        }
+            if(max != null && max.length() >= 0.1) {
+         count++;
+     //    System.out.println(count);
+                return moveTowardsPoint(percepts, new Vector2(0, 1), new Vector2.Origin(), max);
+            }
+
         Angle newRotation = Angle.fromRadians(percepts.getScenarioGuardPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble());
         rotation = Angle.fromRadians(rotation.getRadians() + newRotation.getRadians());
         if (rotation.getDegrees() > 360) {
@@ -147,19 +164,18 @@ return exploration(percepts);
 
 
         } else if (rotation.getDegrees() < 0) {
-
             rotation = Angle.fromDegrees(rotation.getDegrees() + 360);
-
         }
-
         Queue<ActionContainer<GuardAction>> actions = new LinkedList<>();
         actions.add(ActionContainer.of(this, new Rotate(rotation)));
-
         return actions;
 
     }
 
-  /*  private GuardAction sentryAction(GuardPercepts percep)
+  /*  private GuardAction sentryAction(GuardPercepts pertPoint(),new Point(0,0));
+               Move move = new Move(new Distance(o.getPoint(), new Point(0, 0)));
+                if (move.getDistance().getValue() >= percep.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue()) {
+                    move = new Move(percep.getScenarioGcep)
     {
         Set<ObjectPercept> seeSentry = percep.getVision()
                 .getObjects()
@@ -168,10 +184,7 @@ return exploration(percepts);
 
         if (!seeSentry.isEmpty()) {
             for (ObjectPercept o : seeSentry) {
-                Distance distance = new Distance(o.getPoint(),new Point(0,0));
-               Move move = new Move(new Distance(o.getPoint(), new Point(0, 0)));
-                if (move.getDistance().getValue() >= percep.getScenarioGuardPercepts().getMaxMoveDistanceGuard().getValue()) {
-                    move = new Move(percep.getScenarioGuardPercepts().getMaxMoveDistanceGuard());
+                Distance distance = new Distance(o.geuardPercepts().getMaxMoveDistanceGuard());
                 }
                 return move;
             }
@@ -278,7 +291,5 @@ return exploration(percepts);
 
         return null;
     }
-
-
 
 }
