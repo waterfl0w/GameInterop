@@ -21,7 +21,7 @@ public class GridMap {
     private final double resolution;
     private CellContent[][] map;
 
-    private final static double occupiedValue = 0.9;
+    private final static double occupiedValue = 20;
     private final static double unoccupiedValue = -0.7;
 
     public GridMap(double resolution, double initialWidth, double initialHeight){
@@ -191,9 +191,10 @@ public class GridMap {
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <= 1; y++) {
                     CellPosition neighbour = new CellPosition(current.x() + x, current.y() + y);
-                    if(this.hasCell(neighbour) || cellGet(neighbour).isOccupied()) continue;
+                    CellContent cell = cellGet(neighbour);
+                    if(!this.hasCell(neighbour) || cell == null || cell.isOccupied()) continue;
 
-                    double tentative_gScore = gScore.getOrDefault(current, Double.POSITIVE_INFINITY) + cellGet(neighbour).getLogValue();
+                    double tentative_gScore = gScore.getOrDefault(current, Double.POSITIVE_INFINITY) + 0;
                     if(tentative_gScore < gScore.getOrDefault(neighbour, Double.POSITIVE_INFINITY))
                     {
                         cameFrom.put(neighbour, current);
@@ -215,8 +216,8 @@ public class GridMap {
 
     private double h(CellPosition cell, CellPosition target)
     {
-        return 0; // Equivalent to Dijkstra
-        //return Math.sqrt(Math.pow(cell.x() - target.x(), 2) + Math.pow(cell.y() - target.y(), 2)); //Euclidian distance
+        //return 0; // Equivalent to Dijkstra
+        return Math.sqrt(Math.pow(cell.x() - target.x(), 2) + Math.pow(cell.y() - target.y(), 2)); //Euclidian distance
         //return Math.abs(cell.x() - cell.y()) + Math.abs(target.x() - target.y()); //Manhattan distance
     }
 

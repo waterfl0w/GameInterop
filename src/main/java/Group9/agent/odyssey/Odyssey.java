@@ -9,14 +9,16 @@ public class Odyssey {
 
     public static void main(String[] args) {
         GridMap gridMap = new GridMap(0.5, 10, 10);
-        for(Vector2 cell : gridMap.ray(new Vector2(-3, -3), new Vector2(-3, 0))) {
-            gridMap.set(cell.getX(), cell.getY(), new CellContent(gridMap.toCell(cell.getX(), cell.getY()), ObjectPerceptType.Wall));
-        }
-        for(Vector2 cell : gridMap.ray(new Vector2.Origin(), new Vector2(-3, 0))) {
-            gridMap.set(cell.getX(), cell.getY(), new CellContent(gridMap.toCell(cell.getX(), cell.getY()), ObjectPerceptType.Wall));
+
+        for(double x = -10; x <= 10; x += 0.5)
+        {
+            for(double y = -10; y <= 10; y += 0.5)
+            {
+                gridMap.set(x, y, new CellContent(gridMap.toCell(x, y), ObjectPerceptType.EmptySpace));
+            }
         }
 
-        System.out.println(gridMap);
+        System.out.println(gridMap.path(new Vector2.Origin(), new Vector2.Random().mul(5)));
 
     }
 

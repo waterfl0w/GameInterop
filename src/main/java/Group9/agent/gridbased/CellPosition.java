@@ -1,7 +1,5 @@
 package Group9.agent.gridbased;
 
-import Group9.math.Vector2;
-
 import java.util.Objects;
 
 public class CellPosition

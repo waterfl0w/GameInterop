@@ -14,6 +14,7 @@ import Interop.Geometry.Point;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.Scenario.SlowDownModifiers;
 import Interop.Percept.Vision.ObjectPercept;
+import Interop.Percept.Vision.ObjectPerceptType;
 import Interop.Percept.Vision.VisionPrecepts;
 
 import java.lang.reflect.InvocationTargetException;
@@ -80,6 +81,25 @@ public class GridBased implements Guard {
 
         lastAction = actionToDo;
         return actionToDo.getAction();
+    }
+
+    public Vector2 canSeeIntruder(GuardPercepts percepts)
+    {
+        Set<ObjectPercept> intruders = percepts.getVision().getObjects()
+                .filter(e -> e.getType() == ObjectPerceptType.Intruder)
+                .getAll();
+
+        if(!intruders.isEmpty())
+        {
+            Vector2 centre = new Vector2.Origin();
+            for(ObjectPercept e : intruders)
+            {
+                centre = centre.add(Vector2.from(e.getPoint()));
+            }
+            return centre.mul(1D/intruders.size());
+        }
+
+        return null;
     }
 
     protected Queue<ActionContainer<GuardAction>> moveTowardsPoint(GuardPercepts percepts, Vector2 direction, Vector2 source,

@@ -65,7 +65,7 @@ public abstract class PointContainer {
         private Line[] lines;
         private List<Vector2[]> triangles = new ArrayList<>();
 
-        private double area = -1;
+        private double area = 0;
 
         public Polygon(Vector2 ...points)
         {
@@ -85,15 +85,19 @@ public abstract class PointContainer {
         @Override
         public double getArea()
         {
-            if(area == -1)
+            return Math.abs(getSignedArea());
+        }
+
+        public double getSignedArea()
+        {
+            if(area == 0)
             {
-                area = 0;
                 for(int i = 0; i < points.length; i++)
                 {
-                    area += (points[i].getX() * points[(i + 1) % points.length].getY()
-                            - points[(i + 1) % points.length].getX() * points[i].getY());
+                    area += (points[i].getX() * points[(i + 1)%points.length].getY()
+                            - points[(i + 1)%points.length].getX() * points[i].getY());
                 }
-                this.area = Math.abs(area) * 0.5;
+                this.area = area * 0.5;
             }
 
             return area;
@@ -244,23 +248,15 @@ public abstract class PointContainer {
 
         @Override
         public Vector2 getCenter() {
-            final double divisor = 6D * this.getArea();
+            final double divisor = 6D * this.getSignedArea();
             double cx = 0;
-            for(int i = 0; i < points.length; i++)
-            {
-                cx += (points[i].getX() + points[(i + 1) % points.length].getX())
-                        * (points[i].getX() * points[(i + 1) % points.length].getY()
-                        - points[(i + 1) % points.length].getX() * points[i].getY());
-            }
-
             double cy = 0;
             for(int i = 0; i < points.length; i++)
             {
-                cy += (points[i].getY() + points[(i + 1) % points.length].getY())
-                        * (points[i].getX() * points[(i + 1) % points.length].getY()
-                        - points[(i + 1) % points.length].getX() * points[i].getY());
+                double t = (points[i].getX() * points[(i + 1)%points.length].getY() - points[(i + 1)%points.length].getX() * points[i].getY());
+                cx += (points[i].getX() + points[(i + 1)%points.length].getX()) * t;
+                cy += (points[i].getY() + points[(i + 1)%points.length].getY()) * t;
             }
-
 
             return new Vector2(cx/divisor, cy/divisor);
         }

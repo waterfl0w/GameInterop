@@ -37,7 +37,7 @@ public class CellContent {
 
     public boolean isOccupied()
     {
-        return true; //TODO
+        return type.isSolid(); //TODO
     }
 
     @Override

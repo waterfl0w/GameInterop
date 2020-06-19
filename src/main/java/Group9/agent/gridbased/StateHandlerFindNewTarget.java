@@ -69,6 +69,13 @@ public class StateHandlerFindNewTarget implements StateHandler{
 //            this.teleportPriorityChange = TELEPORT_PRIORITY_TURNS;
 //        }
 
+        if(agent.canSeeIntruder(percepts) != null)
+        {
+            this.nextState = StateType.FOLLOW_INTRUDER;
+            this.resetState();
+            return ActionContainer.of(this, new Inaction());
+        }
+
         if (!active) {
             findNewTarget(percepts);
             active = true;
