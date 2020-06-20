@@ -1,5 +1,6 @@
 package Group9.agent.gridbased;
 
+import Group9.Game;
 import Group9.agent.deepspace.ActionContainer;
 import Group9.agent.odyssey.GridMap;
 import Group9.math.Vector2;
@@ -37,7 +38,6 @@ public class StateHandlerFindNewTarget implements StateHandler{
     private final int DEFAULT_TARGET_TIMEOUT = 25;
 
     List<ObjectPerceptType> targetsPriority = new ArrayList<>(Arrays.asList(
-            ObjectPerceptType.TargetArea,
             ObjectPerceptType.SentryTower,
             ObjectPerceptType.Door,
             ObjectPerceptType.Window,
@@ -49,6 +49,8 @@ public class StateHandlerFindNewTarget implements StateHandler{
     //Queue<Vector2> history;
     EvictingQueue<Vector2> history;
     Vector2 lastCellVectAttempt;
+
+    GuardPercepts percepts;
 
     public StateHandlerFindNewTarget() {
         targetTimeout = targetsPriority.stream().collect(Collectors.toMap(Function.identity(), t -> 0));
@@ -62,7 +64,7 @@ public class StateHandlerFindNewTarget implements StateHandler{
         Group9.agent.deepspace.ActionContainer<GuardAction> retAction = Group9.agent.deepspace.ActionContainer.of(this, new NoAction());
 
         this.agent = agent;
-
+        this.percepts = percepts;
 //        initialRoundAfterTeleport = percepts.getAreaPercepts().isJustTeleported() && !initialRoundAfterTeleport && teleportPriorityChange == -1;
 //        if(initialRoundAfterTeleport)
 //        {
@@ -148,6 +150,37 @@ public class StateHandlerFindNewTarget implements StateHandler{
         this.active = false;
     }
 
+    // returns evaluation: higher is more favorable
+    private double evaluationFunction(CellContent cellContent) {
+
+//        double w1 = 1;
+//        double w2 = 0.3;
+//        double w3 = 1;
+//        double w4 = 1;
+//        double wR = 5;
+
+        double w1 = 1;
+        double w2 = 0;
+        double w3 = 0.1;
+        double w4 = 0.1;
+        double wR = 0;
+
+        double wallHuggerCorrector = -1/(Math.abs(agent.getPosition().getX() - cellContent.getCellPosition().x()) + 0.001)
+                    - 1/(Math.abs(agent.getPosition().getY() - cellContent.getCellPosition().y()) + 0.001);
+
+        if (!percepts.wasLastActionExecuted()) {
+            wallHuggerCorrector *= 20;
+        }
+
+        return w1 * cellContent.getLogValue()
+                + w2 * 1.0/(targetsPriority.indexOf(cellContent.getType()) + 1) - 1D/4
+                - w3 * cellContent.getVisits()
+                + w4 * wallHuggerCorrector
+                + wR * Game._RANDOM.nextDouble();
+    }
+
+
+
     Set<CellPosition> blackList = new HashSet<>();
     private void findNewTarget(GuardPercepts guardPercepts)
     {
@@ -169,17 +202,18 @@ public class StateHandlerFindNewTarget implements StateHandler{
         Set<Vector2> cells360 = explore360state.getCells360();
 
         // eesh this is terrible:
-        double maxLogValue = -9990;
+        double maxEval = -9990;
         Vector2 maxCellVect = new Vector2(0, 0);
         history.add(maxCellVect);
         for (Vector2 cell : cells360) {
             CellContent cellContent = gridMap.get(cell.getX(), cell.getY());
 
-            if (cellContent.getLogValue() > maxLogValue
+            double eval;
+            if (!history.contains(cell)
                     && cellContent.getLogValue() < 0
-                    && !history.contains(cell)) {
+                    && (eval = evaluationFunction(cellContent)) > maxEval) {
 //                    && !lastCellVectAttempt.equals(cell) {
-                maxLogValue = cellContent.getLogValue();
+                maxEval = eval;
                 maxCellVect = cell;
             }
         }
@@ -228,7 +262,7 @@ public class StateHandlerFindNewTarget implements StateHandler{
             actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, c.sub(s).normalise(), c, n));
         }*/
 
-        actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, agent.getDirection(), agent.getPosition(), maxCellVect));
+        actionsQueue.addAll(agent.moveTowardsPoint(guardPercepts, agent.getDirection(), agent.getPosition(), maxCellVect.mul(0.95)));
         history.add(maxCellVect);
         lastCellVectAttempt = maxCellVect;
     }
