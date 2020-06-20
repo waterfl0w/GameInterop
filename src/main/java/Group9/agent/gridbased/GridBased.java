@@ -13,6 +13,8 @@ import Interop.Geometry.Distance;
 import Interop.Geometry.Point;
 import Interop.Percept.GuardPercepts;
 import Interop.Percept.Scenario.SlowDownModifiers;
+import Interop.Percept.Sound.SoundPercept;
+import Interop.Percept.Sound.SoundPerceptType;
 import Interop.Percept.Vision.ObjectPercept;
 import Interop.Percept.Vision.ObjectPerceptType;
 import Interop.Percept.Vision.VisionPrecepts;
@@ -51,8 +53,19 @@ public class GridBased implements Guard {
         return this.gridMap;
     }
 
+    int frame = 0;
     @Override
     public GuardAction getAction(GuardPercepts percepts) {
+        //--- activity map
+        CellContent cellContent = gridMap.get(position.getX(), position.getY());
+        if(cellContent != null && percepts.wasLastActionExecuted())
+        {
+            getGridMap().writeDebugImage(String.format("frames/%d.png", frame), false, false);
+            frame++;
+            cellContent.countVisit();
+        }
+        //---
+
         ActionContainer<GuardAction> actionToDo = ActionContainer.of(this, new NoAction());
         VisionPrecepts vision = percepts.getVision();
         Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
@@ -102,6 +115,25 @@ public class GridBased implements Guard {
         return null;
     }
 
+    public double canHearSuspiciousSound(GuardPercepts percepts)
+    {
+        Set<SoundPercept> sounds = percepts.getSounds()
+                .filter(e -> e.getType() == SoundPerceptType.Noise)
+                .getAll();
+
+        if(!sounds.isEmpty())
+        {
+            double soundDirection = 0;
+            for(SoundPercept e : sounds)
+            {
+                soundDirection += e.getDirection().getRadians();
+            }
+            return soundDirection / sounds.size();
+        }
+
+        return -1;
+    }
+
     protected Queue<ActionContainer<GuardAction>> moveTowardsPoint(GuardPercepts percepts, Vector2 direction, Vector2 source,
                                                                    Vector2 target) {
         Queue<ActionContainer<GuardAction>> retActionsQueue = new LinkedList<>();
@@ -134,7 +166,12 @@ public class GridBased implements Guard {
         return retActionsQueue;
     }
 
-    private double getSpeedModifier(GuardPercepts guardPercepts)
+    public boolean hasSuspicion(GuardPercepts percepts)
+    {
+        return canSeeIntruder(percepts) != null || canHearSuspiciousSound(percepts) != -1;
+    }
+
+    public double getSpeedModifier(GuardPercepts guardPercepts)
     {
         SlowDownModifiers slowDownModifiers =  guardPercepts.getScenarioGuardPercepts().getScenarioPercepts().getSlowDownModifiers();
         if(guardPercepts.getAreaPercepts().isInWindow())

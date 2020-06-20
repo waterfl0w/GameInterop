@@ -33,7 +33,7 @@ public class StateHandlerExplore360 implements StateHandler {
         ActionContainer<GuardAction> retAction = ActionContainer.of(this, new Inaction());
         this.agent = agent;
 
-        if(agent.canSeeIntruder(percepts) != null)
+        if(agent.hasSuspicion(percepts))
         {
             this.nextState = StateType.FOLLOW_INTRUDER;
             this.resetState();

@@ -7,6 +7,7 @@ public class CellContent {
     private CellPosition cellPosition;
     private ObjectPerceptType type;
     private double logValue = 0;
+    private int visits = 0;
 
     public CellContent(CellPosition cellPosition, ObjectPerceptType type)
     {
@@ -38,6 +39,15 @@ public class CellContent {
     public boolean isOccupied()
     {
         return type.isSolid(); //TODO
+    }
+
+    public int getVisits() {
+        return visits;
+    }
+
+    public void countVisit()
+    {
+        this.visits++;
     }
 
     @Override

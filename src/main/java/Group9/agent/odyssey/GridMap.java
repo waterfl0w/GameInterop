@@ -288,8 +288,34 @@ public class GridMap {
 
     }
 
-    public void writeDebugImage()
+    public void writeDebugImage(String fileName, boolean heatmap, boolean log)
     {
+        int maxVisits = 0;
+        double minLog = 0;
+        double maxLog = 0;
+        double sum = 0;
+        double counter = 0;
+        if(heatmap)
+        {
+            for(int x = 0; x < horizontalLength(); x++)
+            {
+                for(int y = 0; y < verticalLength(); y++)
+                {
+                    CellContent cellContent = this.map[y][x];
+                    if(cellContent != null)
+                    {
+                        maxVisits = Math.max(maxVisits, cellContent.getVisits());
+                        minLog = Math.min(minLog, cellContent.getLogValue());
+                        maxLog = Math.max(maxLog, cellContent.getLogValue());
+                        sum += cellContent.getLogValue();
+                        counter++;
+                    }
+                }
+            }
+        }
+        sum /= counter;
+        minLog = Math.abs(minLog);
+
         BufferedImage bufferedImage = new BufferedImage(horizontalLength(), verticalLength(), BufferedImage.TYPE_INT_RGB);
         for(int x = 0; x < horizontalLength(); x++)
         {
@@ -299,19 +325,42 @@ public class GridMap {
                 CellContent cellContent = this.map[y][x];
                 if(cellContent != null)
                 {
-                    if(cellContent.getType().isSolid())
+                    if(heatmap)
                     {
-                        pixel = Color.BLUE.getRGB();
+                        if(log)
+                        {
+                            double value = cellContent.getLogValue();
+                            if(value < 0)
+                            {
+                                pixel = Color.getHSBColor((float) ((cellContent.getLogValue() / maxLog) * 0.5 + 0.5), 1, 1).getRGB();
+                            }
+                            else
+                            {
+                                pixel = Color.getHSBColor((float) Math.min((cellContent.getLogValue() - counter) / counter, 1), 1, 1).getRGB();
+                            }
+                        }
+                        else
+                        {
+                            pixel = Color.getHSBColor((float) cellContent.getVisits() / maxVisits, 1, 1).getRGB();
+                        }
                     }
                     else
                     {
-                        pixel = Color.WHITE.getRGB();
+                        if(cellContent.getType().isSolid())
+                        {
+                            pixel = Color.BLUE.getRGB();
+                        }
+                        else
+                        {
+                            pixel = Color.WHITE.getRGB();
+                        }
                     }
+
                 }
                 bufferedImage.setRGB(x, y, pixel);
             }
         }
-        File outputfile = new File("saved.png");
+        File outputfile = new File(fileName);
         try {
             ImageIO.write(bufferedImage, "png", outputfile);
         } catch (IOException e) {
