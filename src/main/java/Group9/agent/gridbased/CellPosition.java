@@ -1,5 +1,7 @@
 package Group9.agent.gridbased;
 
+import Group9.math.Vector2;
+
 import java.util.Objects;
 
 public class CellPosition
@@ -35,5 +37,9 @@ public class CellPosition
     @Override
     public int hashCode() {
         return Objects.hash(x, y);
+    }
+
+    public Vector2 toVector2() {
+        return new Vector2(x, y);
     }
 }

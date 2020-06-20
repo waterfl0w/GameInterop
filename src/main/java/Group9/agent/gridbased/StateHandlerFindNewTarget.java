@@ -174,6 +174,7 @@ public class StateHandlerFindNewTarget implements StateHandler{
         history.add(maxCellVect);
         for (Vector2 cell : cells360) {
             CellContent cellContent = gridMap.get(cell.getX(), cell.getY());
+
             if (cellContent.getLogValue() > maxLogValue
                     && cellContent.getLogValue() < 0
                     && !history.contains(cell)) {
