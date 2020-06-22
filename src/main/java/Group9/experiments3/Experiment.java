@@ -1,17 +1,15 @@
-package Group9;
+package Group9.experiments3;
 
-import Group9.agent.RandomAgent;
+import Group9.Game;
 import Group9.agent.RandomIntruderAgent;
 import Group9.agent.factories.IAgentFactory;
 import Group9.agent.gridbased.GridBased;
-import Group9.agent.odyssey.GridMap;
 import Group9.map.GameMap;
 import Group9.map.parser.Parser;
 import Interop.Agent.Guard;
 import Interop.Agent.Intruder;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +30,8 @@ public class Experiment {
         File mazy = new File("./src/main/java/Group9/map/maps/mazy.map");
         File less_mazy = new File("./src/main/java/Group9/map/maps/less_mazy.map");
         File test_tunnel_objects = new File("./src/main/java/Group9/map/maps/test_tunnel_objects.map");
+        File testMap = new File("./src/main/java/Group9/experiments3/testmap_angle_60__view_6.map");
+        File Guards3 = new File("./src/main/java/Group9/experiments3/test_2_45_1_3.map");
 
         Class<? extends Intruder> intruderClass = RandomIntruderAgent.class;
         Class<? extends Guard> guardClass = GridBased.class;
@@ -39,7 +39,7 @@ public class Experiment {
         int intruderWins = 0;
         int guardWins = 0;
 
-        GameMap gameMap = Parser.parseFile(less_mazy.getAbsolutePath());
+        GameMap gameMap = Parser.parseFile(Guards3.getAbsolutePath());
         for (int i = 0; i < n; i++) {
 
             Game game = new Game(gameMap.clone(), new IAgentFactory() {
@@ -71,6 +71,8 @@ public class Experiment {
                     return guards;
                 }
             }, false);
+
+
             game.run();
             if(game.getWinner() == Game.Team.INTRUDERS)
             {
@@ -86,11 +88,7 @@ public class Experiment {
             System.out.println(intruderWins + " - " + guardWins);
 
         }
-
         System.out.println(output);
-
-
-
     }
 
 }
