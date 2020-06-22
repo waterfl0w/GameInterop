@@ -21,7 +21,7 @@ public class GridMap {
     private final double resolution;
     private CellContent[][] map;
 
-    private final static double occupiedValue = 20;
+    private final static double occupiedValue = 7;
     private final static double unoccupiedValue = -0.7;
 
     public GridMap(double resolution, double initialWidth, double initialHeight){
