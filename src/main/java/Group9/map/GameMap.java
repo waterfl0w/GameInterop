@@ -304,7 +304,6 @@ public class GameMap implements Cloneable {
             }
         }
 
-        //TODO not sure anymore whether this is right or not
         if(retSet.isEmpty() || onlyEmptySpace)
         {
             retSet.add(new ObjectPercept(ObjectPerceptType.EmptySpace, line.getEnd()
