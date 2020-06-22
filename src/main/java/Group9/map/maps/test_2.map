@@ -1,13 +1,13 @@
 gameMode = 0
 height = 121
 width = 250
-numGuards = 4
-numIntruders = 3
+numGuards = 2
+numIntruders = 1
 captureDistance = 1.5
 winConditionIntruderRounds = 1
 maxRotationAngle = 45.0
-maxMoveDistanceIntruder = 0.1
-maxSprintDistanceIntruder = 0.2
+maxMoveDistanceIntruder = 1.5
+maxSprintDistanceIntruder = 2
 maxMoveDistanceGuard = 2
 sprintCooldown = 2
 pheromoneCooldown = 3

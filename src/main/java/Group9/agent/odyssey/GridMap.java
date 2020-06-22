@@ -66,6 +66,11 @@ public class GridMap {
         this.map[cell.y()][cell.x()] = value;
     }
 
+    public void set(Vector2 v, CellContent value)
+    {
+        this.set(v.getX(), v.getY(), value);
+    }
+
     public CellContent get(double x, double y)
     {
         CellPosition cell = toCell(x, y);

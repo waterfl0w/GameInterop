@@ -35,21 +35,9 @@ public class RandomIntruderAgent implements Intruder {
         return 1;
     }
 
-    private int randomMoveCounter = 0;
-
     @Override
     public IntruderAction getAction(IntruderPercepts percepts) {
-        double maxDeg = Math.min(Math.PI / 4, Math.abs(percepts.getTargetDirection().getRadians()));
-        if(Math.abs(maxDeg) > 1E-02 && randomMoveCounter == 0)
-        {
-            return new Rotate(Angle.fromRadians(maxDeg * Math.signum(percepts.getTargetDirection().getRadians())));
-        }
-        else if(randomMoveCounter == 0)
-        {
-            randomMoveCounter = 10;
-        }
 
-        randomMoveCounter--;
         if(!percepts.wasLastActionExecuted())
         {
             return new Rotate(Angle.fromRadians(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble()));

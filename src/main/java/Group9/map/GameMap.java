@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class GameMap {
+public class GameMap implements Cloneable {
 
     private final static boolean _OPTIMISE_RAYS = true;
     private final static boolean _OPTIMISED_FILTERED_OBJECTS = true;
@@ -367,6 +367,12 @@ public class GameMap {
             objectsInSight.add(new Vector2[]{ startOfRay, endOfRay });
         }
         return objectsInSight;
+    }
+
+
+    public GameMap clone()
+    {
+        return new GameMap(this.gameSettings, this.mapObjects);
     }
 
 }

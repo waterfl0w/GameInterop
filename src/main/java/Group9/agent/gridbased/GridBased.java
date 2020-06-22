@@ -58,7 +58,7 @@ public class GridBased implements Guard {
     public GuardAction getAction(GuardPercepts percepts) {
         //--- activity map
         CellContent cellContent = gridMap.get(position.getX(), position.getY());
-        if(cellContent != null && percepts.wasLastActionExecuted())
+        if(cellContent != null && percepts.wasLastActionExecuted() && false)
         {
             getGridMap().writeDebugImage(String.format("frames/%d.png", frame), false, false);
             frame++;
@@ -70,11 +70,6 @@ public class GridBased implements Guard {
         VisionPrecepts vision = percepts.getVision();
         Set<ObjectPercept> objectPercepts = vision.getObjects().getAll();
 
-        //
-        if(!percepts.wasLastActionExecuted())
-        {
-            System.out.println("well");
-        }
         assert percepts.wasLastActionExecuted() : "Last action executed wasn't valid!";
 
         // if we moved/rotated, we update our current status
