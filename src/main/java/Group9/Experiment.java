@@ -31,6 +31,7 @@ public class Experiment {
         File simple = new File("./src/main/java/Group9/map/maps/test_2.map");
         File mazy = new File("./src/main/java/Group9/map/maps/mazy.map");
         File test_tunnel_objects = new File("./src/main/java/Group9/map/maps/test_tunnel_objects.map");
+        File less_mazy = new File("./src/main/java/Group9/map/maps/less_mazy.map");
 
         Class<? extends Intruder> intruderClass = RandomIntruderAgent.class;
         Class<? extends Guard> guardClass = GridBased.class;
@@ -38,7 +39,7 @@ public class Experiment {
         int intruderWins = 0;
         int guardWins = 0;
 
-        GameMap gameMap = Parser.parseFile(test_tunnel_objects.getAbsolutePath());
+        GameMap gameMap = Parser.parseFile(less_mazy.getAbsolutePath());
         for (int i = 0; i < n; i++) {
 
             Game game = new Game(gameMap.clone(), new IAgentFactory() {
