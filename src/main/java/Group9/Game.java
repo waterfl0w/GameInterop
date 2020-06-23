@@ -318,6 +318,9 @@ public class Game implements Runnable {
         return null;
     }
 
+    public int intruderActions = 0;
+    public int guardActions = 0;
+
     /**
      * Executes one full turn of the game.
      * @return
@@ -331,7 +334,7 @@ public class Game implements Runnable {
         {
             if(!(intruder.isCaptured()))
             {
-
+                intruderActions++;
                 lockin(() -> {
                     final IntruderAction action = intruder.getAgent().getAction(this.generateIntruderPercepts(intruder));
                     actionSuccess.put(intruder, executeAction(intruder, action));
@@ -346,7 +349,7 @@ public class Game implements Runnable {
 
         for(GuardContainer guard : this.guards)
         {
-
+            guardActions++;
             lockin(() -> {
                 final GuardAction action = guard.getAgent().getAction(this.generateGuardPercepts(guard));
                 actionSuccess.put(guard, executeAction(guard, action));
@@ -612,7 +615,7 @@ public class Game implements Runnable {
     {
 
         final double angle = intruder.getDirection().angle(
-            this.gameMap.getObjects(TargetArea.class).get(0).getContainer().getCenter().sub(intruder.getPosition())
+            this.gameMap.getObjects(TargetArea.class).get(0).getContainer().getAsPolygon().getCenter().sub(intruder.getPosition())
         );
 
         return new IntruderPercepts(

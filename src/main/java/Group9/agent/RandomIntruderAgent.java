@@ -37,6 +37,7 @@ public class RandomIntruderAgent implements Intruder {
 
     @Override
     public IntruderAction getAction(IntruderPercepts percepts) {
+
         if(!percepts.wasLastActionExecuted())
         {
             return new Rotate(Angle.fromRadians(percepts.getScenarioIntruderPercepts().getScenarioPercepts().getMaxRotationAngle().getRadians() * Game._RANDOM.nextDouble()));

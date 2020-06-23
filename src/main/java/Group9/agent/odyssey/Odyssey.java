@@ -1,46 +1,24 @@
 package Group9.agent.odyssey;
 
-import Group9.agent.Intruder.Cell;
+import Group9.agent.gridbased.CellContent;
+import Group9.agent.gridbased.CellPosition;
 import Group9.math.Vector2;
-
-import java.util.List;
+import Interop.Percept.Vision.ObjectPerceptType;
 
 public class Odyssey {
 
     public static void main(String[] args) {
-        GridMap gridMap = new GridMap(1, 10, 10);
-        gridMap.set(-1, 5, (short) 1);
-        gridMap.set(-2, 5, (short) 1);
-        gridMap.set(-3, 5, (short) 1);
-        gridMap.set(-4, 5, (short) 1);
-        gridMap.set(-5, 5, (short) 1);
-        gridMap.set(0, 5, (short) 1);
-        gridMap.set(1, 5, (short) 1);
-        gridMap.set(2, 5, (short) 1);
-        gridMap.set(3, 5, (short) 1);
-        gridMap.set(4, 5, (short) 1);
-        gridMap.set(5, 5, (short) 1);
-        gridMap.set(0, 12, (short) 1);
+        GridMap gridMap = new GridMap(0.5, 10, 10);
 
-        gridMap.set(-1, -3, (short) 1);
-        gridMap.set(-2, -3, (short) 1);
-        gridMap.set(-3, -3, (short) 1);
-        gridMap.set(-4, -3, (short) 1);
-        gridMap.set(-5, -3, (short) 1);
-        gridMap.set(0, -3, (short) 1);
-        gridMap.set(1, -3, (short) 1);
-        gridMap.set(2, -3, (short) 1);
-        gridMap.set(3, -3, (short) 1);
-        gridMap.set(4, -3, (short) 1);
-        gridMap.set(5, -3, (short) 1);
-
-        System.out.println(gridMap);
-        List<GridMap.Cell> path = gridMap.path(new Vector2(-2,-5), new Vector2(0, 10));
-        for(GridMap.Cell move : path) {
-            gridMap.map[gridMap.map.length- move.y()][move.x()] = 2;
+        for(double x = -10; x <= 10; x += 0.5)
+        {
+            for(double y = -10; y <= 10; y += 0.5)
+            {
+                gridMap.set(x, y, new CellContent(gridMap.toCell(x, y), ObjectPerceptType.EmptySpace));
+            }
         }
 
-        System.out.println(gridMap);
+        System.out.println(gridMap.path(new Vector2.Origin(), new Vector2.Random().mul(5)));
 
     }
 

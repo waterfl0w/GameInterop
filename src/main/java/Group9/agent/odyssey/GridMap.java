@@ -1,8 +1,17 @@
 package Group9.agent.odyssey;
 
+import Group9.agent.gridbased.CellContent;
+import Group9.agent.gridbased.CellPosition;
 import Group9.math.Vector2;
+import Interop.Percept.Vision.ObjectPerceptType;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class GridMap {
 
@@ -10,11 +19,18 @@ public class GridMap {
     // to only grow in one direction.
     private final static double GROWTH_FACTOR = 2;
     private final double resolution;
-    public short[][] map;
+    private CellContent[][] map;
+
+    private final static double occupiedValue = 7;
+    private final static double unoccupiedValue = -0.7;
 
     public GridMap(double resolution, double initialWidth, double initialHeight){
         this.resolution = resolution;
-        this.map = new short[ceil(initialHeight/resolution)][ceil(initialWidth/resolution)];
+        this.map = new CellContent[ceil(initialHeight/resolution)][ceil(initialWidth/resolution)];
+    }
+
+    public CellContent[][] getCells() {
+        return map;
     }
 
     public double getWidth()
@@ -27,73 +43,149 @@ public class GridMap {
         return this.resolution * this.map.length;
     }
 
-    public void set(double x, double y, short value)
+    public void update(double x, double y, boolean isOccupied, ObjectPerceptType type)
     {
-        this.checkForGrowth(x, y);
-        Cell cell = toCell(x, y);
-        this.map[(verticalLength()-cell.y()-1)][cell.x()] = value;
+        CellContent content = get(x, y);
+
+        if(content == null)
+        {
+            content = new CellContent(toCell(x, y), type);
+            set(x, y, content);
+        }
+        content.updateLog(isOccupied ? occupiedValue : unoccupiedValue);
+        if(isOccupied)
+        {
+            content.setType(type);
+        }
     }
 
-    public short get(double x, double y)
+    public void set(double x, double y, CellContent value)
     {
-        Cell cell = toCell(x, y);
+        this.checkForGrowth(x, y);
+        CellPosition cell = toCell(x, y);
+        this.map[cell.y()][cell.x()] = value;
+    }
+
+    public void set(Vector2 v, CellContent value)
+    {
+        this.set(v.getX(), v.getY(), value);
+    }
+
+    public CellContent get(double x, double y)
+    {
+        CellPosition cell = toCell(x, y);
         if(!hasCell(cell))
         {
-            return -1;
+
+            return null;
         }
         return cellGet(cell);
     }
 
-    private short cellGet(Cell cell)
+    private CellContent cellGet(CellPosition cell)
     {
-        return this.map[(verticalLength()-cell.y()-1)][cell.x()];
+        return this.map[cell.y()][cell.x()];
     }
 
-    private boolean hasCell(Cell cell)
+    private boolean hasCell(CellPosition cell)
     {
-        return (cell.x() >= horizontalLength() || cell.y() >= verticalLength() || cell.x() < 0 || cell.y() < 0);
+        return (cell.x() < horizontalLength() && cell.y() < verticalLength() && cell.x() >= 0 && cell.y() >= 0);
     }
 
-    public void ray(Vector2 a, Vector2 b)
+    public List<Vector2> ray(Vector2 a, Vector2 b)
     {
-        final double length = b.distance(a);
-        final Vector2 dir = b.sub(a).normalise().mul(resolution);
-        for(double dx = 0; dx <= length / resolution; dx++)
+        //@SOURCE http://algo.pw/algo/69/java
+        List<Vector2> cells = new ArrayList<>();
+        CellPosition ac = toCell(a.getX(), a.getY());
+        CellPosition bc = toCell(b.getX(), b.getY());
+        int pdx = 0, pdy = 0, es, el, err;
+
+        int dx = bc.x() - ac.x();
+        int dy = bc.y() - ac.y();
+
+        int incx = (int) Math.signum(dx);
+        int incy = (int) Math.signum(dy);
+
+        if (dx < 0) dx = -dx;
+        if (dy < 0) dy = -dy;
+
+        if (dx > dy)
         {
-            Vector2 p = a.add(dir.mul(dx));
-            set(p.getX(), p.getY(), (short) 1);
+            pdx = incx;
+            es = dy;
+            el = dx;
         }
+        else
+        {
+            pdy = incy;
+            es = dx;
+            el = dy;
+        }
+
+        int x = ac.x();
+        int y = ac.y();
+        err = el/2;
+        cells.add(toRealWorld(new CellPosition(x, y)));
+
+        for (int t = 0; t < el; t++)
+        {
+            err -= es;
+            if (err < 0)
+            {
+                err += el;
+                x += incx;
+                y += incy;
+            }
+            else
+            {
+                x += pdx;
+                y += pdy;
+            }
+
+            CellPosition position = new CellPosition(x, y);
+            if(hasCell(position))
+            {
+                CellContent cell = cellGet(position);
+                if(cell != null && cell.getType().isSolid())
+                {
+                    break;
+                }
+            }
+
+            cells.add(toRealWorld(position));
+        }
+        return cells;
     }
 
-    public List<Cell> path(Vector2 start, Vector2 target)
+    public List<Vector2> path(Vector2 start, Vector2 target)
     {
-        Cell startCell = toCell(start.getX(), start.getY());
-        Cell targetCell = toCell(target.getX(), target.getY());
+        CellPosition startCell = toCell(start.getX(), start.getY());
+        CellPosition targetCell = toCell(target.getX(), target.getY());
 
-        Map<Cell, Double> fScore = new HashMap<>();
+        Map<CellPosition, Double> fScore = new HashMap<>();
         fScore.put(startCell, h(startCell, targetCell));
 
-        List<Cell> openSet = new LinkedList<>();
+        List<CellPosition> openSet = new LinkedList<>();
         openSet.add(startCell);
 
-        Map<Cell, Cell> cameFrom = new HashMap<>();
+        Map<CellPosition, CellPosition> cameFrom = new HashMap<>();
 
-        Map<Cell, Double> gScore = new HashMap<>();
+        Map<CellPosition, Double> gScore = new HashMap<>();
         gScore.put(startCell, 0D);
 
         while (!openSet.isEmpty())
         {
-            Cell current = openSet.get(0);
+            CellPosition current = openSet.get(0);
 
             if(current.equals(targetCell))
             {
                 System.out.println("done");
-                List<Cell> total_path = new LinkedList<>();
-                total_path.add(current);
+                List<Vector2> total_path = new LinkedList<>();
+                total_path.add(toRealWorld(current));
                 while (cameFrom.containsKey(current))
                 {
                     current = cameFrom.get(current);
-                    total_path.add(current);
+                    total_path.add(toRealWorld(current));
                 }
                 Collections.reverse(total_path);
                 return total_path;
@@ -103,10 +195,11 @@ public class GridMap {
 
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <= 1; y++) {
-                    Cell neighbour = new Cell(current.x() + x, current.y() + y);
-                    if(this.hasCell(neighbour) || cellGet(neighbour) == 1) continue;
+                    CellPosition neighbour = new CellPosition(current.x() + x, current.y() + y);
+                    CellContent cell = cellGet(neighbour);
+                    if(!this.hasCell(neighbour) || cell == null || cell.isOccupied()) continue;
 
-                    double tentative_gScore = gScore.getOrDefault(current, Double.POSITIVE_INFINITY) + cellGet(neighbour);
+                    double tentative_gScore = gScore.getOrDefault(current, Double.POSITIVE_INFINITY) + 0;
                     if(tentative_gScore < gScore.getOrDefault(neighbour, Double.POSITIVE_INFINITY))
                     {
                         cameFrom.put(neighbour, current);
@@ -126,39 +219,34 @@ public class GridMap {
         return null;
     }
 
-    private double h(Cell cell, Cell target)
+    private double h(CellPosition cell, CellPosition target)
     {
-        return 0; // Equivalent to Dijkstra
-        //return Math.sqrt(Math.pow(cell.x() - target.x(), 2) + Math.pow(cell.y() - target.y(), 2)); //Euclidian distance
+        //return 0; // Equivalent to Dijkstra
+        return Math.sqrt(Math.pow(cell.x() - target.x(), 2) + Math.pow(cell.y() - target.y(), 2)); //Euclidian distance
         //return Math.abs(cell.x() - cell.y()) + Math.abs(target.x() - target.y()); //Manhattan distance
     }
 
-    private Cell toCell(double x, double y)
+    public CellPosition toCell(double x, double y)
     {
-        return new Cell(
+        return new CellPosition(
                 floor((x + getWidth() / 2) / resolution),
                 floor((y + getHeight() / 2) / resolution)
+        );
+    }
+
+    public Vector2 toRealWorld(CellPosition cellPosition)
+    {
+        //TODO move to the proper centre of the cell
+        return new Vector2(
+                ((cellPosition.x() * resolution) - getWidth() / 2) + resolution / 2,
+                ((cellPosition.y() * resolution) - getHeight() / 2) + resolution / 2
         );
     }
 
     private void checkForGrowth(double x, double y)
     {
         //--- calculate the cell position. use the abs values to avoid handling negative values further down in the pipeline
-        Cell cell = toCell(Math.abs(x), Math.abs(y));
-        final double horizontalGrowth = (cell.x() / (double) (horizontalLength()));
-        final double verticalGrowth = (cell.y() / (double) (verticalLength()));
-        /*if(horizontalGrowth > 1 && verticalGrowth > 1)
-        {
-            grow(ceil(horizontalGrowth * horizontalLength() * GROWTH_FACTOR), ceil(verticalGrowth * verticalLength() * GROWTH_FACTOR));
-        }
-        else if(horizontalGrowth > 1)
-        {
-            grow(ceil(horizontalGrowth * horizontalLength() * GROWTH_FACTOR), verticalLength());
-        }
-        else if(verticalGrowth > 1)
-        {
-            grow(horizontalLength(), ceil(verticalGrowth * verticalLength() * GROWTH_FACTOR));
-        }*/
+        CellPosition cell = toCell(Math.abs(x), Math.abs(y));
         if(cell.x() >= horizontalLength() && cell.y() >= verticalLength())
         {
             grow(ceil(cell.x() * GROWTH_FACTOR), ceil(cell.y() * GROWTH_FACTOR));
@@ -173,12 +261,12 @@ public class GridMap {
         }
     }
 
-    private int verticalLength()
+    public int verticalLength()
     {
         return this.map.length;
     }
 
-    private int horizontalLength()
+    public int horizontalLength()
     {
         return this.map[0].length;
     }
@@ -186,11 +274,11 @@ public class GridMap {
     private void grow(int newWidth, int newHeight)
     {
         long time = System.currentTimeMillis();
-        Cell oldCenter = toCell(0, 0);
-        short[][] newMap = new short[newHeight][newWidth];
-        short[][] oldMap = this.map;
+        CellPosition oldCenter = toCell(0, 0);
+        CellContent[][] newMap = new CellContent[newHeight][newWidth];
+        CellContent[][] oldMap = this.map;
         this.map = newMap;
-        Cell newCenter = toCell(0, 0);
+        CellPosition newCenter = toCell(0, 0);
 
         final int xOffset = newCenter.x() - oldCenter.x();
         final int yOffset = newCenter.y() - oldCenter.y();
@@ -205,13 +293,94 @@ public class GridMap {
 
     }
 
+    public void writeDebugImage(String fileName, boolean heatmap, boolean log)
+    {
+        int maxVisits = 0;
+        double minLog = 0;
+        double maxLog = 0;
+        double sum = 0;
+        double counter = 0;
+        if(heatmap)
+        {
+            for(int x = 0; x < horizontalLength(); x++)
+            {
+                for(int y = 0; y < verticalLength(); y++)
+                {
+                    CellContent cellContent = this.map[y][x];
+                    if(cellContent != null)
+                    {
+                        maxVisits = Math.max(maxVisits, cellContent.getVisits());
+                        minLog = Math.min(minLog, cellContent.getLogValue());
+                        maxLog = Math.max(maxLog, cellContent.getLogValue());
+                        sum += cellContent.getLogValue();
+                        counter++;
+                    }
+                }
+            }
+        }
+        sum /= counter;
+        minLog = Math.abs(minLog);
+
+        BufferedImage bufferedImage = new BufferedImage(horizontalLength(), verticalLength(), BufferedImage.TYPE_INT_RGB);
+        for(int x = 0; x < horizontalLength(); x++)
+        {
+            for(int y = 0; y < verticalLength(); y++)
+            {
+                int pixel = 0;
+                CellContent cellContent = this.map[y][x];
+                if(cellContent != null)
+                {
+                    if(heatmap)
+                    {
+                        if(log)
+                        {
+                            double value = cellContent.getLogValue();
+                            if(value < 0)
+                            {
+                                pixel = Color.getHSBColor((float) ((cellContent.getLogValue() / maxLog) * 0.5 + 0.5), 1, 1).getRGB();
+                            }
+                            else
+                            {
+                                pixel = Color.getHSBColor((float) Math.min((cellContent.getLogValue() - counter) / counter, 1), 1, 1).getRGB();
+                            }
+                        }
+                        else
+                        {
+                            pixel = Color.getHSBColor((float) cellContent.getVisits() / maxVisits, 1, 1).getRGB();
+                        }
+                    }
+                    else
+                    {
+                        if(cellContent.getType().isSolid())
+                        {
+                            pixel = Color.BLUE.getRGB();
+                        }
+                        else
+                        {
+                            pixel = Color.WHITE.getRGB();
+                        }
+                    }
+
+                }
+                bufferedImage.setRGB(x, y, pixel);
+            }
+        }
+        File outputfile = new File(fileName);
+        try {
+            ImageIO.write(bufferedImage, "png", outputfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        CellPosition centre = toCell(0, 0);
         for(int y = 0; y < verticalLength(); y++)
         {
             for (int x = 0; x < horizontalLength(); x++) {
-                builder.append(this.map[y][x] + " ");
+                builder.append(((y == centre.y() && x == centre.x()) ? "cccc" : this.map[y][x]) + " ");
             }
             builder.append("\n");
         }
@@ -226,42 +395,6 @@ public class GridMap {
     private static int ceil(double a)
     {
         return (int) Math.ceil(a);
-    }
-
-    public static class Cell
-    {
-        private final int x;
-        private final int y;
-
-        public Cell(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-
-        public int x()
-        {
-            return this.x;
-        }
-
-        public int y()
-        {
-            return this.y;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Cell cell = (Cell) o;
-            return x == cell.x &&
-                    y == cell.y;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
-        }
     }
 
 }
