@@ -1,0 +1,8 @@
+Files here:
+
+Experiments
+map: test_2    angle_60    viewRange_{2,4,6,8}
+testmap_angle_60__view_2.map.result (200 runs)
+testmap_angle_60__view_4.map.result (200 runs)
+testmap_angle_60__view_6.map.result (200 runs)
+testmap_angle_60__view_8.map.result (500 runs)
